@@ -1,0 +1,1954 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3730a3">
+<title>Bicicletas · stock y armado</title>
+<style>
+  :root{
+    /* marca: índigo profundo */
+    --brand:#3730a3;--brand2:#5b53d6;--brandink:#eceafd;--brandline:#cfcaf7;
+    /* los tres estados del stock + la salida */
+    --par:#b45309;--parink:#fdf1de;        /* cuadros para armar */
+    --pre:#7c3aed;--preink:#f1e9fe;        /* prearmadas */
+    --arm:#0d9488;--armink:#dcf5f1;        /* armadas */
+    --caj:#2563eb;--cajink:#e4edfe;        /* en caja / salida */
+    --danger:#be123c;--dangerink:#fee9ee;
+    --ink:#1a1a2e;--muted:#6b7280;--line:#e6e6f0;--bg:#f4f4f8;--card:#fff;
+    --shadow:0 1px 2px rgba(31,26,80,.05),0 6px 18px -6px rgba(31,26,80,.14);
+    --r:16px;--safeb:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);font-size:16px;line-height:1.35}
+  .app{max-width:980px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+
+  header{background:linear-gradient(150deg,var(--brand) 0%,var(--brand2) 100%);color:#fff;
+    padding:calc(env(safe-area-inset-top,0px) + 15px) 16px 14px;position:sticky;top:0;z-index:30;
+    box-shadow:0 2px 14px rgba(31,26,80,.22)}
+  header .t{font-weight:800;font-size:16.5px;letter-spacing:-.2px}
+  header .s{font-size:11.5px;opacity:.75;margin-top:2px}
+  /* el stock, siempre a la vista */
+  header .hst{display:flex;gap:7px;margin-top:12px}
+  header .hst div{flex:1;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16);
+    border-radius:11px;padding:7px 4px;text-align:center}
+  header .hst b{display:block;font-size:19px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums}
+  header .hst span{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;opacity:.8;margin-top:1px}
+  header .hst div.neg b{color:#ffc9d4}
+
+  main{flex:1;padding:14px 14px 124px}
+  .view{display:none}.view.active{display:block}
+
+  .block{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:14px}
+  .block-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .block-h .tt{flex:1;min-width:0}
+  .block-h .tt b{display:block;font-size:14.5px}
+  .block-h .tt span{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+  .block-h .hcount{background:var(--brandink);color:var(--brand);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:800}
+  .block-b{padding:12px 14px}
+  .block.off{opacity:.55}
+  .block.off .stepn{background:#cacad8}
+  .block.done .stepn{background:var(--arm)}
+  .stepn{width:26px;height:26px;border-radius:50%;background:var(--brand);color:#fff;font-size:14px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+
+  /* Selector de día */
+  .daybar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .daybar .nav-d{border:1px solid var(--line);background:#fff;border-radius:11px;width:44px;height:46px;font-size:19px;
+    color:var(--brand);font-weight:800;cursor:pointer;flex:0 0 auto;box-shadow:var(--shadow)}
+  .daybar .nav-d:disabled{opacity:.35}
+  .daybar .dlab{flex:1;min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:7px 12px;
+    text-align:center;box-shadow:var(--shadow);cursor:pointer}
+  .daybar .dlab b{display:block;font-size:15px}
+  .daybar .dlab span{display:block;font-size:11.5px;color:var(--muted)}
+  .daybar .dlab.old b{color:var(--pre)}
+
+  /* KPIs */
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+  .kpis.k4{grid-template-columns:repeat(4,1fr)}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 8px;box-shadow:var(--shadow);
+    text-align:center;position:relative;overflow:hidden}
+  .kpi:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--line)}
+  .kpi b{display:block;font-size:25px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+  .kpi span{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.25}
+  .kpi .mt{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+  .kpi.par b{color:var(--par)}.kpi.par:before{background:var(--par)}
+  .kpi.pre b{color:var(--pre)}.kpi.pre:before{background:var(--pre)}
+  .kpi.arm b{color:var(--arm)}.kpi.arm:before{background:var(--arm)}
+  .kpi.caj b{color:var(--caj)}.kpi.caj:before{background:var(--caj)}
+  .kpi.neg b{color:var(--danger)}.kpi.neg:before{background:var(--danger)}
+  .kpi.big{padding:14px 8px}
+  .kpi.big b{font-size:32px}
+
+  /* Buscador */
+  .search{position:relative;margin-bottom:10px}
+  .search input{width:100%;padding:13px 14px 13px 40px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:#fff}
+  .search .mg{position:absolute;left:14px;top:13px;color:var(--muted);font-size:15px}
+
+  /* Filas de modelo */
+  .skrow{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:11px;padding:10px 11px;
+    margin-bottom:7px;background:#fff;cursor:pointer}
+  .skrow:active{background:#f7f7fb}
+  .skrow .si{flex:1;min-width:0}
+  .skrow .si b{display:block;font-size:14.5px}
+  .skrow .si span{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .skrow .nums{display:flex;gap:5px;flex:0 0 auto}
+  .skrow .go{color:var(--muted);font-weight:800;flex:0 0 auto}
+  .n{min-width:34px;text-align:center;border-radius:8px;padding:4px 5px;font-size:13.5px;font-weight:800}
+  .n.par{background:var(--parink);color:#8a3d07}
+  .n.pre{background:var(--preink);color:#5b21b6}
+  .n.arm{background:var(--armink);color:#0b6f66}
+  .n.caj{background:var(--cajink);color:#1d4ed8}
+  .n.z{background:#f0f0f6;color:#b9b9c8}
+  .tl{background:var(--brandink);color:var(--brand);border-radius:7px;padding:3px 8px;font-size:12px;font-weight:800;flex:0 0 auto}
+
+  /* Bici elegida */
+  .picked{display:flex;align-items:center;gap:11px;background:var(--brandink);border:1px solid var(--brandline);
+    border-radius:12px;padding:11px 12px;margin-bottom:12px}
+  .picked .pi{flex:1;min-width:0}
+  .picked .pi b{display:block;font-size:16px}
+  .picked .pi span{display:block;font-size:11.5px;color:var(--muted)}
+  .picked .ch{border:1px solid var(--brandline);background:#fff;color:var(--brand);border-radius:9px;padding:8px 11px;
+    font-size:12.5px;font-weight:800;cursor:pointer;flex:0 0 auto}
+
+  /* Selector de acción */
+  .opts{display:flex;gap:8px;margin-bottom:12px}
+  .opt{flex:1;background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 6px;text-align:center;
+    cursor:pointer;font-weight:800;font-size:13px;color:var(--ink)}
+  .opt .oi{display:block;font-size:23px;margin-bottom:4px}
+  .opt .oc{display:block;font-size:10.5px;font-weight:700;color:var(--muted);margin-top:3px}
+  .opt:active{transform:scale(.98)}
+  .opt.on.o-pre{border-color:var(--pre);background:var(--preink);color:#5b21b6}
+  .opt.on.o-arm{border-color:var(--arm);background:var(--armink);color:#0b6f66}
+  .opt.on.o-caj{border-color:var(--caj);background:var(--cajink);color:#1d4ed8}
+  .opt.on .oc{color:inherit;opacity:.8}
+
+  /* Contador */
+  .cnt{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+  .cnt button{width:58px;height:58px;border-radius:14px;border:1px solid var(--line);background:#fff;font-size:26px;
+    font-weight:800;color:var(--brand);cursor:pointer;flex:0 0 auto;line-height:1;padding:0}
+  .cnt button:active{background:#eeeef6}
+  .cnt input{flex:1;min-width:0;text-align:center;font-size:32px;font-weight:800;padding:10px 4px;border:1px solid var(--line);
+    border-radius:14px;background:#fff;color:var(--ink);-moz-appearance:textfield}
+  .cnt input::-webkit-outer-spin-button,.cnt input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .qchips{display:flex;gap:7px;margin-bottom:12px}
+  .qchips button{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 0;font-size:13.5px;
+    font-weight:800;color:var(--muted);cursor:pointer}
+  .qchips button:active{background:#eeeef6}
+  .qchips.wrap{flex-wrap:wrap}
+  .qchips.wrap button{flex:0 0 auto;min-width:56px}
+  .qchips button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .p2sum{font-size:12.5px;color:var(--muted);margin-bottom:11px;line-height:1.5}
+  .p2sum b{color:var(--ink)}
+
+  /* Tablas */
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tbl th{text-align:right;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:6px 4px;
+    border-bottom:1px solid var(--line)}
+  .tbl th:first-child{text-align:left}
+  .tbl td{padding:7px 4px;border-bottom:1px solid #f1f1f8;text-align:right;font-variant-numeric:tabular-nums}
+  .tbl td:first-child{text-align:left}
+  .tbl tr.tot td{font-weight:800;border-bottom:none;border-top:2px solid var(--line)}
+  .tbl .tl{display:inline-block;margin-left:5px;font-size:10.5px;padding:1px 5px}
+  .tbl tbody tr[data-sku]{cursor:pointer}
+  .tbl tbody tr[data-sku]:active{background:#f7f7fb}
+  .tbl td.par{color:#8a3d07}.tbl td.pre{color:#5b21b6}
+  .tbl td.arm{color:#0b6f66;font-weight:800}.tbl td.caj{color:#1d4ed8;font-weight:800}
+  .tbl td.z{color:#c7c7d4;font-weight:400}
+  .tbl td.neg{color:var(--danger);font-weight:800}
+
+  /* Movimientos */
+  .mv{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:10px;padding:9px 11px;
+    margin-bottom:7px;background:#fff}
+  .mv .hh{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;flex:0 0 auto}
+  .mv .tag{font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px;flex:0 0 auto}
+  .mv .tag.ing,.mv .tag.ajp{background:var(--parink);color:#8a3d07}
+  .mv .tag.pre,.mv .tag.ajr{background:var(--preink);color:#5b21b6}
+  .mv .tag.arm,.mv .tag.aja{background:var(--armink);color:#0b6f66}
+  .mv .tag.caj{background:var(--cajink);color:#1d4ed8}
+  .mv .qy{font-weight:800;font-size:14.5px;flex:0 0 auto}
+  .mv .nt{flex:1;min-width:0;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mv .x{border:none;background:#f1f1f8;color:var(--muted);border-radius:8px;width:30px;height:30px;font-size:15px;
+    cursor:pointer;flex:0 0 auto;line-height:1;padding:0}
+  .mv.aj{background:#fdf8ee;border-color:#f0dcb4}
+
+  /* Días */
+  .drow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:11px 12px;
+    margin-bottom:8px;background:#fff;cursor:pointer;box-shadow:var(--shadow)}
+  .drow:active{background:#f7f7fb}
+  .drow .dd{flex:1;min-width:0}
+  .drow .dd b{display:block;font-size:14.5px}
+  .drow .dd span{display:block;font-size:11.5px;color:var(--muted)}
+
+  /* Resumen */
+  .segs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
+  .seg{border:1px solid var(--line);background:#fff;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:700;
+    color:var(--muted);cursor:pointer;flex:0 0 auto}
+  .seg.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .chart{display:flex;gap:7px;align-items:flex-end;overflow-x:auto;padding:6px 2px 0;min-height:130px}
+  .cday{flex:0 0 auto;width:42px;text-align:center}
+  .cbars{display:flex;gap:2px;align-items:flex-end;justify-content:center;height:104px}
+  .cbars i{width:10px;border-radius:3px 3px 0 0;display:block;min-height:2px;background:#e6e6f0}
+  .cbars i.pre{background:var(--pre)}.cbars i.arm{background:var(--arm)}.cbars i.caj{background:var(--caj)}
+  .cday .cl{font-size:10px;color:var(--muted);margin-top:5px;white-space:nowrap}
+  .lg{display:flex;gap:12px;justify-content:center;margin-top:10px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+  .lg s{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:4px;text-decoration:none}
+
+  /* Botones y campos */
+  .btn{flex:1;min-width:120px;border:none;border-radius:13px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;
+    transition:transform .08s}
+  .btn:active{transform:scale(.985)}
+  .btn-sm{padding:9px 12px;font-size:13.5px;min-width:0;flex:0 0 auto}
+  .btn-primary{background:var(--brand);color:#fff;box-shadow:0 2px 8px -2px rgba(55,48,163,.5)}
+  .btn-ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+  .btn-danger{background:var(--card);color:var(--danger);border:1px solid #f6c3d0}
+  .btn:disabled{opacity:.45}
+  .row-btns{display:flex;gap:9px;flex-wrap:wrap}
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+  .field input{width:100%;padding:13px;border:1px solid var(--line);border-radius:11px;font-size:16px;background:#fff}
+  .field .fhint{font-size:11.5px;color:var(--muted);margin-top:4px}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .empty{text-align:center;color:var(--muted);padding:22px 10px;font-size:14px;line-height:1.5}
+  .pill{display:inline-block;font-size:12px;padding:3px 10px;border-radius:20px;font-weight:700}
+  .pill-ok{background:var(--armink);color:var(--arm)}
+  .pill-no{background:var(--dangerink);color:var(--danger)}
+  .note{border-radius:11px;padding:10px 12px;font-size:12.5px;margin-bottom:10px;line-height:1.5}
+  .note-w{background:#fdf8ee;border:1px solid #f0dcb4;color:#8a5a08}
+  .note-e{background:var(--dangerink);border:1px solid #f6c3d0;color:var(--danger)}
+  .note-k{background:var(--armink);border:1px solid #b7e3dd;color:#0b6f66}
+
+  /* Nav */
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255,255,.96);
+    backdrop-filter:blur(8px);border-top:1px solid var(--line);display:flex;padding-bottom:var(--safeb)}
+  .app-nav{max-width:980px;margin:0 auto;width:100%;display:flex;gap:4px;padding:6px 8px 4px}
+  .nav button{flex:1;text-align:center;padding:7px 0 6px;color:var(--muted);font-size:10.5px;font-weight:700;
+    background:none;border:none;cursor:pointer;border-radius:12px}
+  .nav button.on{color:var(--brand);background:var(--brandink)}
+  .nav button .ic{display:block;font-size:19px;margin-bottom:2px}
+
+  /* Sheets */
+  .sheet-bg{position:fixed;inset:0;z-index:60;background:rgba(26,26,46,.45);display:none}
+  .sheet-bg.show{display:block}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;background:var(--bg);border-radius:18px 18px 0 0;
+    max-height:92vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .25s;max-width:760px;margin:0 auto}
+  .sheet.show{transform:translateY(0)}
+  .sheet-head{padding:14px 16px 12px;border-bottom:1px solid var(--line);background:#fff;border-radius:18px 18px 0 0;position:relative}
+  .sheet-head .grip{width:38px;height:4px;background:#d6d6e2;border-radius:3px;margin:0 auto 10px}
+  .sheet-head h2{margin:0;font-size:17px;padding-right:38px}
+  .sheet-head .sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .sheet-head .x{position:absolute;right:12px;top:12px;border:none;background:#f0f0f6;border-radius:50%;
+    width:32px;height:32px;font-size:18px;color:var(--muted);cursor:pointer;line-height:1}
+  .sheet-body{overflow:auto;padding:14px 16px;flex:1}
+  .sheet-foot{padding:12px 16px calc(12px + var(--safeb));border-top:1px solid var(--line);background:#fff;display:flex;gap:10px}
+  #skuBg{z-index:50}
+  #skuSheet{z-index:51}
+
+  .cf-bg{position:fixed;inset:0;z-index:110;background:rgba(26,26,46,.5);display:none;align-items:center;justify-content:center;padding:22px}
+  .cf-bg.show{display:flex}
+  .cf-card{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:400px}
+  .cf-card h3{margin:0 0 6px;font-size:17px}
+  .cf-card p{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:1.5}
+  .cf-btns{display:flex;gap:9px}
+  .toast{position:fixed;bottom:calc(80px + var(--safeb));left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;
+    padding:12px 20px;border-radius:12px;font-size:14px;z-index:120;opacity:0;pointer-events:none;transition:.25s;max-width:90%;text-align:center}
+  .toast.show{opacity:1;bottom:calc(90px + var(--safeb))}
+  pre.out{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px;font-size:12px;white-space:pre-wrap;
+    word-break:break-word;max-height:240px;overflow:auto;margin:0 0 10px}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="t" id="hdrTitle">🚲 Bicicletas · stock y armado</div>
+    <div class="s" id="hdrMeta">—</div>
+    <div class="hst" id="hdrStock"></div>
+  </header>
+
+  <main>
+    <!-- ==================== STOCK ==================== -->
+    <section class="view active" id="v-stock">
+      <div class="kpis" id="stKpis"></div>
+      <div id="stAviso"></div>
+
+      <div class="block">
+        <div class="block-h">
+          <div class="tt"><b>Stock por modelo</b><span>Tocá un modelo para prearmar, armar o encajar</span></div>
+          <span class="hcount" id="stCount">0</span>
+        </div>
+        <div class="block-b">
+          <div class="search">
+            <span class="mg">🔍</span>
+            <input id="qStock" placeholder="Modelo, talle o SKU… (ej: blaze m)" autocomplete="off">
+          </div>
+          <div class="row-btns" style="margin-bottom:11px">
+            <button class="btn btn-ghost btn-sm" id="btnAllStock">Ver todos</button>
+            <button class="btn btn-ghost btn-sm" id="btnNewSku">➕ Artículo</button>
+          </div>
+          <div style="overflow-x:auto" id="stTbl"></div>
+        </div>
+      </div>
+
+      <div class="row-btns">
+        <button class="btn btn-ghost" id="btnCsvStock">⬇️ CSV del stock</button>
+        <button class="btn btn-ghost" id="btnCopyStock">📋 Copiar stock</button>
+      </div>
+    </section>
+
+    <!-- ==================== CONTEO ==================== -->
+    <section class="view" id="v-conteo">
+      <div class="block" id="c1">
+        <div class="block-h">
+          <span class="stepn">1</span>
+          <div class="tt"><b>Elegí el modelo</b><span>Modelo, talle o SKU</span></div>
+          <span class="hcount" id="c1Badge">—</span>
+        </div>
+        <div class="block-b">
+          <div id="cPicked"></div>
+          <div class="search">
+            <span class="mg">🔍</span>
+            <input id="qConteo" placeholder="Ej: blaze m · trigger · BICI-STORM-M" autocomplete="off">
+          </div>
+          <div id="cRes"></div>
+          <div id="cRecent"></div>
+        </div>
+      </div>
+
+      <div class="block" id="c2">
+        <div class="block-h">
+          <span class="stepn">2</span>
+          <div class="tt"><b>Unidades que entran</b><span>Cuadros nuevos disponibles para armar</span></div>
+        </div>
+        <div class="block-b" id="c2body"></div>
+      </div>
+
+      <div class="block" id="c3">
+        <div class="block-h">
+          <span class="stepn">3</span>
+          <div class="tt"><b>Ajustar el conteo real</b><span>Si contaste y no coincide con el sistema</span></div>
+        </div>
+        <div class="block-b" id="c3body"></div>
+      </div>
+
+      <div class="block">
+        <div class="block-h">
+          <div class="tt"><b>Planilla de stock</b><span>Para cargar muchos modelos de una</span></div>
+        </div>
+        <div class="block-b">
+          <div class="row-btns" style="margin-bottom:10px">
+            <button class="btn btn-ghost btn-sm" id="btnTplDown">⬇️ Bajar planilla</button>
+            <button class="btn btn-primary btn-sm" id="btnTplUp">⬆️ Cargar planilla</button>
+            <input type="file" id="fileTpl" accept=".csv,text/csv,text/plain" style="display:none">
+          </div>
+          <div class="hint">La planilla baja con <b>todo el catálogo</b> y el stock que figura hoy, en columnas
+            <b>para_armar · prearmadas · armadas</b>. Completás las cantidades reales en Excel, la volvés a
+            cargar y la app guarda <b>la diferencia</b> como ajuste de conteo. Si agregás filas con modelos que
+            no están, se crean solos (podés poner sólo <b>modelo</b> y <b>talle</b> y el SKU lo arma la app).</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-h">
+          <div class="tt"><b>Conteos de hoy</b><span>Ingresos y ajustes cargados hoy</span></div>
+          <span class="hcount" id="cHoyCount">0</span>
+        </div>
+        <div class="block-b" id="cHoy"></div>
+      </div>
+    </section>
+
+    <!-- ==================== HISTORIAL ==================== -->
+    <section class="view" id="v-hist">
+      <div class="daybar">
+        <button class="nav-d" id="dPrev" title="Día anterior">‹</button>
+        <div class="dlab" id="dLab"><b>—</b><span>—</span></div>
+        <button class="nav-d" id="dNext" title="Día siguiente">›</button>
+      </div>
+
+      <div class="kpis k4" id="hKpis"></div>
+
+      <div class="block">
+        <div class="block-h">
+          <div class="tt"><b>Armado del día por modelo</b><span>Qué se hizo con cada bici</span></div>
+        </div>
+        <div class="block-b" style="overflow-x:auto" id="hTbl"></div>
+      </div>
+
+      <div class="block">
+        <div class="block-h">
+          <div class="tt"><b>Movimientos del día</b><span>Tocá ✕ para borrar una carga mal hecha</span></div>
+          <span class="hcount" id="hMvCount">0</span>
+        </div>
+        <div class="block-b" id="hMvList"></div>
+      </div>
+
+      <div class="block" id="hUp">
+        <div class="block-h">
+          <div class="tt"><b>Parte del día</b><span>Copiarlo o subirlo a Drive</span></div>
+          <span class="hcount" id="upBadge">—</span>
+        </div>
+        <div class="block-b">
+          <div class="row-btns">
+            <button class="btn btn-ghost" id="btnCopyDay">📋 Copiar</button>
+            <button class="btn btn-primary" id="btnUpDay">☁️ Subir a Drive</button>
+          </div>
+          <div class="hint" id="upHint">—</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-h">
+          <div class="tt"><b>Días con movimiento</b><span>Tocá uno para verlo</span></div>
+          <span class="hcount" id="histCount">0</span>
+        </div>
+        <div class="block-b" id="histList"></div>
+      </div>
+
+      <div class="block">
+        <div class="block-h"><div class="tt"><b>Resumen del período</b><span>Prearmadas · armadas · en caja</span></div></div>
+        <div class="block-b">
+          <div class="segs" id="segs"></div>
+          <div class="chart" id="chart"></div>
+          <div class="lg">
+            <span><s style="background:var(--pre)"></s>Prearmadas</span>
+            <span><s style="background:var(--arm)"></s>Armadas</span>
+            <span><s style="background:var(--caj)"></s>En caja</span>
+          </div>
+          <div style="overflow-x:auto;margin-top:12px" id="resTbl"></div>
+          <div class="row-btns" style="margin-top:12px">
+            <button class="btn btn-ghost btn-sm" id="btnCsvDias">⬇️ CSV por día</button>
+            <button class="btn btn-ghost btn-sm" id="btnCsvArm">⬇️ CSV armado por modelo</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== AJUSTES ==================== -->
+    <section class="view" id="v-cfg">
+      <div class="block">
+        <div class="block-h">
+          <div class="tt"><b>Google Drive</b><span>Dónde se suben los partes diarios</span></div>
+          <span class="pill" id="gasPill">—</span>
+        </div>
+        <div class="block-b">
+          <div class="field">
+            <label>URL del Apps Script</label>
+            <input id="gasUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" spellcheck="false">
+            <div class="fhint">La que termina en <b>/exec</b>. Tiene que ser la misma en todos los celulares.</div>
+          </div>
+          <div class="row-btns">
+            <button class="btn btn-primary btn-sm" id="btnSaveGas">Guardar URL</button>
+            <button class="btn btn-ghost btn-sm" id="btnTestGas">Probar conexión</button>
+          </div>
+          <div class="hint">El script crea la carpeta <b>Bicicletas stock</b> en Drive y, adentro, <b>una carpeta nueva
+            por día</b> con el stock, el armado y los movimientos. Los pasos para instalarlo están en
+            <b>apps-script/BicicletasStock.gs</b>.</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-h"><div class="tt"><b>Turno y objetivos</b><span>Opcional</span></div></div>
+        <div class="block-b">
+          <div class="field">
+            <label>Turno / responsable</label>
+            <input id="cPers" placeholder="Ej: Turno mañana" autocomplete="off">
+            <div class="fhint">Aparece en el parte que se copia y en lo que se sube a Drive.</div>
+          </div>
+          <div class="g3">
+            <div class="field"><label>Meta prearmar</label><input id="mPre" type="number" inputmode="numeric" min="0" placeholder="0"></div>
+            <div class="field"><label>Meta armar</label><input id="mArm" type="number" inputmode="numeric" min="0" placeholder="0"></div>
+            <div class="field"><label>Meta en caja</label><input id="mCaj" type="number" inputmode="numeric" min="0" placeholder="0"></div>
+          </div>
+          <div class="row-btns"><button class="btn btn-primary" id="btnSaveCfg">Guardar</button></div>
+          <div class="hint">Las metas se muestran debajo de los números del día, en Historial.</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-h">
+          <div class="tt"><b>Modelos propios</b><span>Los que agregaste a mano, fuera del catálogo</span></div>
+          <span class="hcount" id="cstCount">0</span>
+        </div>
+        <div class="block-b" id="cstList"></div>
+      </div>
+
+      <div class="block">
+        <div class="block-h"><div class="tt"><b>Respaldo</b><span>Todo se guarda en este dispositivo</span></div></div>
+        <div class="block-b">
+          <div class="row-btns" style="margin-bottom:10px">
+            <button class="btn btn-ghost btn-sm" id="btnExpJson">⬇️ Exportar JSON</button>
+            <button class="btn btn-ghost btn-sm" id="btnImpJson">⬆️ Importar JSON</button>
+            <input type="file" id="fileJson" accept=".json,application/json" style="display:none">
+          </div>
+          <div class="hint" id="cfgInfo">—</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-h"><div class="tt"><b>Borrar</b><span>No se puede deshacer</span></div></div>
+        <div class="block-b">
+          <div class="row-btns"><button class="btn btn-danger" id="btnWipe">🗑️ Borrar todo el registro</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav"><div class="app-nav">
+    <button data-v="stock" class="on"><span class="ic">📦</span>Stock</button>
+    <button data-v="conteo"><span class="ic">➕</span>Conteo</button>
+    <button data-v="hist"><span class="ic">📋</span>Historial</button>
+    <button data-v="cfg"><span class="ic">⚙️</span>Ajustes</button>
+  </div></nav>
+</div>
+
+<!-- Hoja de un modelo: stock + acciones de armado -->
+<div class="sheet-bg" id="skuBg"></div>
+<div class="sheet" id="skuSheet">
+  <div class="sheet-head">
+    <div class="grip"></div>
+    <button class="x" id="skuX">✕</button>
+    <h2 id="skuTitle">Modelo</h2>
+    <div class="sub" id="skuSub">—</div>
+  </div>
+  <div class="sheet-body" id="skuBody"></div>
+  <div class="sheet-foot">
+    <button class="btn btn-primary" id="skuClose">Listo</button>
+  </div>
+</div>
+
+<!-- Confirmar y subir -->
+<div class="sheet-bg" id="upBg"></div>
+<div class="sheet" id="upSheet">
+  <div class="sheet-head">
+    <div class="grip"></div>
+    <button class="x" id="upX">✕</button>
+    <h2 id="upTitle">Subir el parte</h2>
+    <div class="sub" id="upSub">—</div>
+  </div>
+  <div class="sheet-body" id="upBody"></div>
+  <div class="sheet-foot">
+    <button class="btn btn-ghost" id="upCancel">Cancelar</button>
+    <button class="btn btn-primary" id="upOk">☁️ Confirmar y subir</button>
+  </div>
+</div>
+
+<!-- Modelo nuevo -->
+<div class="sheet-bg" id="nsBg"></div>
+<div class="sheet" id="nsSheet">
+  <div class="sheet-head">
+    <div class="grip"></div>
+    <button class="x" id="nsX">✕</button>
+    <h2>Artículo nuevo</h2>
+    <div class="sub">Nombre y talle: la app arma el SKU</div>
+  </div>
+  <div class="sheet-body">
+    <div class="field">
+      <label>Nombre del modelo</label>
+      <input id="nsNom" placeholder="Ej: CARRERA" autocomplete="off" spellcheck="false">
+      <div class="fhint">Sin el <b>BICI-</b> adelante y sin el talle: los pone la app.</div>
+    </div>
+    <div class="field">
+      <label>Talles</label>
+      <div class="qchips wrap" id="nsTalles"></div>
+      <input id="nsTalOtro" placeholder="Otro talle (ej: 24, XXL)" autocomplete="off" spellcheck="false">
+      <div class="fhint">Podés marcar varios: se crea un artículo por talle.</div>
+    </div>
+    <div id="nsPrev"></div>
+  </div>
+  <div class="sheet-foot">
+    <button class="btn btn-ghost" id="nsCancel">Cancelar</button>
+    <button class="btn btn-primary" id="nsOk">Agregar</button>
+  </div>
+</div>
+
+<!-- Texto para copiar -->
+<div class="sheet-bg" id="txtBg"></div>
+<div class="sheet" id="txtSheet">
+  <div class="sheet-head">
+    <div class="grip"></div>
+    <button class="x" id="txtX">✕</button>
+    <h2 id="txtTitle">Copiar</h2>
+    <div class="sub">Si el botón no copia, seleccioná el texto a mano.</div>
+  </div>
+  <div class="sheet-body"><pre class="out" id="txtOut"></pre></div>
+  <div class="sheet-foot">
+    <button class="btn btn-ghost" id="txtClose">Cerrar</button>
+    <button class="btn btn-primary" id="txtCopy">📋 Copiar</button>
+  </div>
+</div>
+
+<!-- Confirmación -->
+<div class="cf-bg" id="cfBg"><div class="cf-card">
+  <h3 id="cfTitle">¿Seguro?</h3>
+  <p id="cfText">—</p>
+  <div class="cf-btns">
+    <button class="btn btn-ghost" id="cfNo">Cancelar</button>
+    <button class="btn btn-danger" id="cfYes">Sí</button>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="bicis-skus.js?v=1"></script>
+<script>
+/* ========================= util ========================= */
+function $(s){return document.querySelector(s);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function load(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
+function put(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){toast('No se pudo guardar en el dispositivo');}}
+function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('show');
+  clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove('show');},2200);}
+
+var LS_MOV='bicis_mov_v2', LS_MOV_V1='bicis_mov_v1', LS_CFG='bicis_cfg_v1',
+    LS_SKU='bicis_skus_custom_v1', LS_GAS='bicis_gas_url', LS_UP='bicis_up_v2';
+
+/* Cada movimiento mueve unidades entre los tres estados del stock.
+   par = cuadros para armar · pre = prearmadas · arm = armadas */
+var TIPOS=[
+  {k:'ing',n:'Ingreso de cuadros',c:'Ingreso',ic:'🧱',d:{par:1}},
+  {k:'pre',n:'Prearmada',         c:'Prearmar',ic:'🔧',d:{par:-1,pre:1}},
+  {k:'arm',n:'Armada',            c:'Armar',  ic:'🚲',d:{pre:-1,arm:1}},
+  {k:'caj',n:'En caja',           c:'Encajar',ic:'📦',d:{arm:-1}},
+  {k:'ajp',n:'Ajuste para armar', c:'Ajuste', ic:'✏️',d:{par:1}},
+  {k:'ajr',n:'Ajuste prearmadas', c:'Ajuste', ic:'✏️',d:{pre:1}},
+  {k:'aja',n:'Ajuste armadas',    c:'Ajuste', ic:'✏️',d:{arm:1}}
+];
+function tipo(k){for(var i=0;i<TIPOS.length;i++)if(TIPOS[i].k===k)return TIPOS[i];return null;}
+var ARMADO=['pre','arm','caj'];          /* lo que va al historial de armado */
+var CONTEO=['ing','ajp','ajr','aja'];    /* lo que se carga desde Conteo */
+function esArmado(k){return ARMADO.indexOf(k)>=0;}
+function esAjuste(k){return k==='ajp'||k==='ajr'||k==='aja';}
+
+var ESTADOS=[
+  {k:'par',n:'Para armar',s:'cuadros sin tocar'},
+  {k:'pre',n:'Prearmadas',s:'a medio armar'},
+  {k:'arm',n:'Armadas',s:'listas'}
+];
+
+/* ---------- migración desde la versión anterior ---------- */
+var MOV=load(LS_MOV,null);
+if(!(MOV instanceof Array)){
+  var viejo=load(LS_MOV_V1,[]);
+  MOV=[];
+  if(viejo instanceof Array){
+    for(var vi=0;vi<viejo.length;vi++){
+      var vm=viejo[vi];
+      if(vm&&vm.st&&tipo(vm.st))
+        MOV.push({id:vm.id||('m'+vi),d:vm.d,ts:+vm.ts||0,tp:vm.st,sk:vm.sk||'',q:Math.round(+vm.q||0),n:vm.n||''});
+    }
+  }
+  put(LS_MOV,MOV);
+}
+var CFG=load(LS_CFG,{meta:{pre:0,arm:0,caj:0},pers:''});
+if(!CFG.meta)CFG.meta={pre:0,arm:0,caj:0};
+var GAS=load(LS_GAS,''), UP=load(LS_UP,{});
+
+/* ---------- catálogo de modelos ---------- */
+var CUSTOM=load(LS_SKU,[]);
+function catalog(){
+  var out=[],i,seen={};
+  var base=(typeof BICIS_SKUS!=='undefined'&&BICIS_SKUS instanceof Array)?BICIS_SKUS:[];
+  for(i=0;i<base.length;i++){var b=base[i],s=(b&&b.s?b.s:b);if(s&&!seen[s]){seen[s]=1;out.push({s:s,r:(b&&b.r)||''});}}
+  for(i=0;i<CUSTOM.length;i++){var c=CUSTOM[i];if(c&&!seen[c]){seen[c]=1;out.push({s:c,r:'propio'});}}
+  out.sort(function(a,b){return a.s<b.s?-1:(a.s>b.s?1:0);});
+  return out;
+}
+var CAT=catalog();
+function catHas(s){for(var i=0;i<CAT.length;i++)if(CAT[i].s===s)return true;return false;}
+/* BICI-HURRICANE-L → {mod:'HURRICANE', tal:'L'} */
+function skuParts(s){
+  var t=String(s||'').toUpperCase().replace(/^BICI-/,'');
+  var m=t.match(/^(.+)-([A-Z0-9]{1,4})$/);
+  if(m)return {mod:m[1].replace(/-/g,' '),tal:m[2]};
+  return {mod:t,tal:''};
+}
+function skuName(s){var p=skuParts(s);return p.mod+(p.tal?' '+p.tal:'');}
+/* búsqueda: cada palabra tiene que ser el principio de alguna palabra del SKU */
+function qWords(q){
+  var a=String(q).toUpperCase().split(/[^A-Z0-9]+/),out=[];
+  for(var i=0;i<a.length;i++)if(a[i])out.push(a[i]);
+  return out;
+}
+function skuMatch(s,words){
+  var toks=(s+' '+skuName(s)).toUpperCase().split(/[^A-Z0-9]+/),i,j,hit;
+  for(i=0;i<words.length;i++){
+    hit=false;
+    for(j=0;j<toks.length;j++)if(toks[j]&&toks[j].indexOf(words[i])===0){hit=true;break;}
+    if(!hit)return false;
+  }
+  return true;
+}
+function mLabel(m){
+  var a=[];
+  if(m.sk)a.push(skuName(m.sk));
+  if(m.n)a.push(m.n);
+  return a.join(' · ');
+}
+
+var DOW=['dom','lun','mar','mié','jue','vie','sáb'];
+var MON=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+function pad(n){return n<10?'0'+n:''+n;}
+function dstr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function dparse(s){var p=String(s).split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function today(){return dstr(new Date());}
+function shiftDay(s,n){var d=dparse(s);d.setDate(d.getDate()+n);return dstr(d);}
+function fmtDay(s){var d=dparse(s);return DOW[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()];}
+function fmtDayLong(s){var d=dparse(s);return DOW[d.getDay()]+' '+d.getDate()+' de '+MON[d.getMonth()]+' '+d.getFullYear();}
+function relDay(s){
+  if(s===today())return 'Hoy';
+  if(s===shiftDay(today(),-1))return 'Ayer';
+  if(s===shiftDay(today(),1))return 'Mañana';
+  return fmtDay(s);
+}
+function hhmm(ts){var d=new Date(ts);return pad(d.getHours())+':'+pad(d.getMinutes());}
+
+/* ========================= datos ========================= */
+function saveMov(){put(LS_MOV,MOV);}
+function addMov(day,tp,q,sku,note){
+  q=Math.round(+q||0); if(!q||!tipo(tp))return false;
+  MOV.push({id:'m'+Date.now()+'_'+Math.random().toString(36).slice(2,7),d:day,ts:Date.now(),
+    tp:tp,sk:sku||'',q:q,n:(note||'').trim()});
+  saveMov();return true;
+}
+function delMov(id){
+  for(var i=0;i<MOV.length;i++){if(MOV[i].id===id){MOV.splice(i,1);saveMov();return true;}}
+  return false;
+}
+/* ---------- stock ---------- */
+function aplicar(t,m){
+  var d=tipo(m.tp).d,k;
+  for(k in d)if(d.hasOwnProperty(k))t[k]+=d[k]*m.q;
+  return t;
+}
+function stockOf(sku){
+  var t={par:0,pre:0,arm:0};
+  for(var i=0;i<MOV.length;i++)if(MOV[i].sk===sku)aplicar(t,MOV[i]);
+  return t;
+}
+function stockAll(){
+  var t={par:0,pre:0,arm:0};
+  for(var i=0;i<MOV.length;i++)aplicar(t,MOV[i]);
+  return t;
+}
+function stockBySku(){
+  var map={},i,m,k;
+  for(i=0;i<MOV.length;i++){
+    m=MOV[i];k=m.sk||'';
+    if(!map[k])map[k]={par:0,pre:0,arm:0};
+    aplicar(map[k],m);
+  }
+  return map;
+}
+function stockVacio(t){return !t||(!t.par&&!t.pre&&!t.arm);}
+/* cuánto se puede hacer de un tipo: prearmar sale de "para armar", etc. */
+function disponible(tp,sku){
+  var t=sku?stockOf(sku):stockAll();
+  if(tp==='pre')return t.par;
+  if(tp==='arm')return t.pre;
+  if(tp==='caj')return t.arm;
+  return null; /* ingresos y ajustes no tienen tope */
+}
+/* ---------- por día ---------- */
+function movOf(day,tipos){
+  var out=[];
+  for(var i=0;i<MOV.length;i++){
+    var m=MOV[i];
+    if(m.d!==day)continue;
+    if(tipos&&tipos.indexOf(m.tp)<0)continue;
+    out.push(m);
+  }
+  out.sort(function(a,b){return b.ts-a.ts;});
+  return out;
+}
+function dayTotals(day){
+  var t={ing:0,pre:0,arm:0,caj:0};
+  for(var i=0;i<MOV.length;i++){
+    var m=MOV[i];
+    if(m.d===day&&t[m.tp]!==undefined)t[m.tp]+=m.q;
+  }
+  return t;
+}
+function dayBySku(day){
+  var map={},i,m,k;
+  for(i=0;i<MOV.length;i++){
+    m=MOV[i];
+    if(m.d!==day)continue;
+    k=m.sk||'';
+    if(!map[k])map[k]={ing:0,pre:0,arm:0,caj:0};
+    if(map[k][m.tp]!==undefined)map[k][m.tp]+=m.q;
+  }
+  return map;
+}
+function dayVacio(t){return !t||(!t.ing&&!t.pre&&!t.arm&&!t.caj);}
+function daysWithData(){
+  var set={},out=[],k;
+  for(var i=0;i<MOV.length;i++)set[MOV[i].d]=1;
+  for(k in set)if(set.hasOwnProperty(k))out.push(k);
+  out.sort();return out;
+}
+function rangeTotals(days){
+  var t={ing:0,pre:0,arm:0,caj:0},set={},i;
+  for(i=0;i<days.length;i++)set[days[i]]=1;
+  for(i=0;i<MOV.length;i++){var m=MOV[i];if(set[m.d]&&t[m.tp]!==undefined)t[m.tp]+=m.q;}
+  return t;
+}
+/* lista de modelos: catálogo + cualquier SKU que tenga movimiento */
+function skusConMovimiento(map){
+  var out=[],seen={},i,k;
+  for(i=0;i<CAT.length;i++){out.push(CAT[i].s);seen[CAT[i].s]=1;}
+  for(k in map)if(map.hasOwnProperty(k)&&k&&!seen[k]){out.push(k);seen[k]=1;}
+  out.sort();
+  return out;
+}
+
+/* ========================= navegación ========================= */
+var VIEW='stock', selDay=today();
+function go(v){
+  VIEW=v;
+  var vs=document.querySelectorAll('.view'),i;
+  for(i=0;i<vs.length;i++)vs[i].classList.toggle('active',vs[i].id==='v-'+v);
+  var bs=document.querySelectorAll('.nav button');
+  for(i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].getAttribute('data-v')===v);
+  window.scrollTo(0,0);
+  render();
+}
+(function(){
+  var bs=document.querySelectorAll('.nav button');
+  for(var i=0;i<bs.length;i++)bs[i].addEventListener('click',function(){go(this.getAttribute('data-v'));});
+})();
+
+function render(){
+  renderHeader();
+  if(VIEW==='stock')renderStock();
+  else if(VIEW==='conteo')renderConteo();
+  else if(VIEW==='hist')renderHist();
+  else if(VIEW==='cfg')renderCfg();
+  if($('#skuSheet').classList.contains('show'))renderSkuSheet();
+}
+function renderHeader(){
+  var t=stockAll(),i,h='';
+  $('#hdrMeta').textContent=CFG.pers?CFG.pers:'Stock en este dispositivo';
+  for(i=0;i<ESTADOS.length;i++){
+    var e=ESTADOS[i];
+    h+='<div'+(t[e.k]<0?' class="neg"':'')+'><b>'+t[e.k]+'</b><span>'+esc(e.n)+'</span></div>';
+  }
+  $('#hdrStock').innerHTML=h;
+}
+
+/* ========================= STOCK ========================= */
+var stockAll_=false;
+function renderStock(){
+  var t=stockAll(),i;
+  var kh='';
+  for(i=0;i<ESTADOS.length;i++){
+    var e=ESTADOS[i];
+    kh+='<div class="kpi '+e.k+' big'+(t[e.k]<0?' neg':'')+'"><b>'+t[e.k]+'</b><span>'+esc(e.n)+
+        '</span><span class="mt">'+esc(e.s)+'</span></div>';
+  }
+  $('#stKpis').innerHTML=kh;
+
+  var av='';
+  if(t.par<0||t.pre<0||t.arm<0)
+    av+='<div class="note note-w">Hay estados en <b>negativo</b>: se armó más de lo que figura ingresado. '+
+        'Cargá los cuadros que entraron en <b>Conteo</b>, o corregí el conteo real ahí mismo.</div>';
+  if(!MOV.length)
+    av+='<div class="note note-w">Todavía no hay nada cargado. Empezá por <b>Conteo</b>: elegí el modelo y '+
+        'agregá los cuadros disponibles.</div>';
+  $('#stAviso').innerHTML=av;
+
+  var map=stockBySku(),q=($('#qStock').value||'').trim(),words=q?qWords(q):[];
+  var skus=skusConMovimiento(map),rows='',n=0,tot={par:0,pre:0,arm:0};
+  $('#btnAllStock').textContent=stockAll_?'Sólo con stock':'Ver todos';
+  for(i=0;i<skus.length;i++){
+    var s=skus[i],x=map[s]||{par:0,pre:0,arm:0};
+    if(words.length&&!skuMatch(s,words))continue;
+    tot.par+=x.par;tot.pre+=x.pre;tot.arm+=x.arm;
+    if(!stockAll_&&stockVacio(x))continue;
+    n++;
+    var p=skuParts(s),to=x.par+x.pre+x.arm;
+    rows+='<tr data-sku="'+esc(s)+'">'+
+      '<td><b>'+esc(p.mod)+'</b> <span class="tl">'+esc(p.tal||'—')+'</span></td>'+
+      '<td class="'+cls('par',x.par)+'">'+x.par+'</td>'+
+      '<td class="'+cls('pre',x.pre)+'">'+x.pre+'</td>'+
+      '<td class="'+cls('arm',x.arm)+'">'+x.arm+'</td>'+
+      '<td class="'+(to?'':'z')+'">'+to+'</td></tr>';
+  }
+  $('#stCount').textContent=n;
+  if(!rows){
+    $('#stTbl').innerHTML='<div class="empty">'+(q?'Ningún modelo coincide con la búsqueda.':
+      'Ningún modelo con stock.<br>Tocá <b>Ver todos</b> para listar el catálogo completo.')+'</div>';
+  }else{
+    $('#stTbl').innerHTML='<table class="tbl"><thead><tr><th>Modelo</th><th>Para armar</th><th>Prearm.</th>'+
+      '<th>Armadas</th><th>Total</th></tr></thead><tbody>'+rows+
+      '<tr class="tot"><td>Total</td><td>'+tot.par+'</td><td>'+tot.pre+'</td><td>'+tot.arm+'</td>'+
+      '<td>'+(tot.par+tot.pre+tot.arm)+'</td></tr></tbody></table>';
+    var rs=$('#stTbl').querySelectorAll('[data-sku]');
+    for(i=0;i<rs.length;i++)rs[i].addEventListener('click',function(){openSku(this.getAttribute('data-sku'));});
+  }
+  var sm=map['']||null;
+  if(sm&&!stockVacio(sm))
+    $('#stAviso').innerHTML+='<div class="note note-w">Hay stock cargado <b>sin modelo</b>: '+sm.par+
+      ' para armar · '+sm.pre+' prearmadas · '+sm.arm+' armadas.</div>';
+}
+function cls(base,v){return v<0?'neg':(v?base:'z');}
+$('#qStock').addEventListener('input',function(){renderStock();});
+$('#btnAllStock').addEventListener('click',function(){stockAll_=!stockAll_;renderStock();});
+
+/* ========================= hoja de un modelo ========================= */
+var skuSel=null, skuAcc='', skuQ=1, skuLast=null, skuNota='';
+function openSku(s){
+  skuSel=s;skuAcc='';skuQ=1;skuLast=null;skuNota='';
+  renderSkuSheet();
+  $('#skuBg').classList.add('show');$('#skuSheet').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeSku(){
+  $('#skuBg').classList.remove('show');$('#skuSheet').classList.remove('show');
+  document.body.style.overflow='';skuSel=null;render();
+}
+$('#skuX').addEventListener('click',closeSku);
+$('#skuClose').addEventListener('click',closeSku);
+$('#skuBg').addEventListener('click',closeSku);
+
+function renderSkuSheet(){
+  if(!skuSel)return;
+  var p=skuParts(skuSel),t=stockOf(skuSel),i;
+  $('#skuTitle').textContent=p.mod+(p.tal?' · '+p.tal:'');
+  $('#skuSub').textContent=skuSel;
+
+  var h='<div class="kpis">'+
+    '<div class="kpi par'+(t.par<0?' neg':'')+'"><b>'+t.par+'</b><span>Para armar</span></div>'+
+    '<div class="kpi pre'+(t.pre<0?' neg':'')+'"><b>'+t.pre+'</b><span>Prearmadas</span></div>'+
+    '<div class="kpi arm'+(t.arm<0?' neg':'')+'"><b>'+t.arm+'</b><span>Armadas</span></div></div>';
+
+  h+='<div class="field"><label>¿Qué se hizo?</label></div><div class="opts">';
+  for(i=0;i<ARMADO.length;i++){
+    var k=ARMADO[i],tp=tipo(k),dis=disponible(k,skuSel);
+    h+='<button class="opt o-'+k+(skuAcc===k?' on':'')+'" data-acc="'+k+'">'+
+       '<span class="oi">'+tp.ic+'</span>'+esc(tp.c)+
+       '<span class="oc">hay '+dis+'</span></button>';
+  }
+  h+='</div>';
+
+  if(!skuAcc){
+    h+='<div class="empty">Marcá si la prearmaste, la armaste o la pusiste en caja.</div>';
+  }else{
+    var tp2=tipo(skuAcc),dis2=disponible(skuAcc,skuSel);
+    var de=skuAcc==='pre'?'para armar':(skuAcc==='arm'?'prearmadas':'armadas');
+    h+='<div class="p2sum">Vas a registrar <b>'+esc(tp2.c.toLowerCase())+' '+skuQ+'</b> de <b>'+
+       esc(skuName(skuSel))+'</b> en <b>'+esc(relDay(selDay))+'</b>. '+
+       'Hay <b>'+dis2+'</b> '+de+'.</div>'+
+       '<div class="cnt"><button id="sMinus">−</button>'+
+       '<input id="sNum" type="number" inputmode="numeric" step="1" min="1" value="'+skuQ+'">'+
+       '<button id="sPlus">+</button></div>'+
+       '<div class="qchips"><button data-q="1">1</button><button data-q="5">5</button>'+
+       '<button data-q="10">10</button><button data-q="20">20</button></div>'+
+       '<div class="field"><label>Nota (opcional)</label>'+
+       '<input id="sNota" placeholder="Ej: lote de la tarde" autocomplete="off" value="'+esc(skuNota)+'"></div>'+
+       '<div class="row-btns"><button class="btn btn-primary" id="sOk">✓ Registrar '+skuQ+'</button></div>';
+    if(dis2<skuQ)
+      h+='<div class="note note-e" style="margin-top:11px">No alcanza: hay <b>'+dis2+'</b> '+de+
+         ' y querés registrar '+skuQ+'. Cargá lo que falta en <b>Conteo</b>.</div>';
+    if(skuLast)
+      h+='<div class="note note-k" style="margin-top:11px">✓ Registrado: '+skuLast.q+' '+esc(skuLast.n)+'.</div>';
+  }
+
+  var ms=[];
+  for(i=0;i<MOV.length;i++)if(MOV[i].sk===skuSel)ms.push(MOV[i]);
+  ms.sort(function(a,b){return b.ts-a.ts;});
+  h+='<div class="field" style="margin-top:14px"><label>Últimos movimientos ('+ms.length+')</label></div>';
+  if(!ms.length)h+='<div class="empty">Todavía sin movimientos.</div>';
+  for(i=0;i<ms.length&&i<25;i++){
+    var m=ms[i],tt=tipo(m.tp);
+    h+='<div class="mv'+(esAjuste(m.tp)?' aj':'')+'">'+
+       '<span class="hh">'+esc(fmtDay(m.d))+' '+hhmm(m.ts)+'</span>'+
+       '<span class="tag '+m.tp+'">'+esc(tt.n)+'</span>'+
+       '<span class="qy">'+(m.q>0?'+':'')+m.q+'</span>'+
+       '<span class="nt">'+esc(m.n||'')+'</span>'+
+       '<button class="x" data-sdel="'+m.id+'">✕</button></div>';
+  }
+  $('#skuBody').innerHTML=h;
+
+  var os=$('#skuBody').querySelectorAll('[data-acc]');
+  for(i=0;i<os.length;i++)os[i].addEventListener('click',function(){
+    var k=this.getAttribute('data-acc');
+    skuAcc=(skuAcc===k)?'':k;skuQ=1;skuLast=null;renderSkuSheet();
+  });
+  if(skuAcc){
+    var setQ=function(v){skuQ=Math.max(1,Math.round(v||1));renderSkuSheet();};
+    $('#sMinus').addEventListener('click',function(){setQ(skuQ-1);});
+    $('#sPlus').addEventListener('click',function(){setQ(skuQ+1);});
+    /* mientras se tipea no se re-dibuja, para no perder el foco */
+    $('#sNum').addEventListener('input',function(){
+      var v=Math.round(+this.value||0);
+      skuQ=v>0?v:1;
+      $('#sOk').textContent='✓ Registrar '+skuQ;
+    });
+    $('#sNum').addEventListener('change',function(){setQ(skuQ);});
+    $('#sNota').addEventListener('input',function(){skuNota=this.value;});
+    var cs=$('#skuBody').querySelectorAll('.qchips button');
+    for(i=0;i<cs.length;i++)cs[i].addEventListener('click',function(){setQ(+this.getAttribute('data-q'));});
+    $('#sOk').addEventListener('click',function(){
+      var dis=disponible(skuAcc,skuSel);
+      if(dis<skuQ){toast('No alcanza: hay '+dis);return;}
+      if(!addMov(selDay,skuAcc,skuQ,skuSel,skuNota)){toast('Poné una cantidad');return;}
+      skuLast={q:skuQ,n:tipo(skuAcc).n.toLowerCase()+' de '+skuName(skuSel)};
+      toast(tipo(skuAcc).c+' '+skuQ+' · '+skuName(skuSel));
+      skuQ=1;skuNota='';render();
+    });
+  }
+  var xs=$('#skuBody').querySelectorAll('[data-sdel]');
+  for(i=0;i<xs.length;i++)xs[i].addEventListener('click',function(){
+    var id=this.getAttribute('data-sdel');
+    confirmBox('Borrar este movimiento','Vuelve a sumar o restar en el stock, según lo que era.',function(){
+      if(delMov(id)){toast('Movimiento borrado');render();}
+    });
+  });
+}
+
+/* ========================= CONTEO ========================= */
+var cPick=null, cQ=1, cLast=null, cNotaVal='';
+function pickC(s){
+  cPick=s;cQ=1;cLast=null;cNotaVal='';
+  if(s!==null)$('#qConteo').value='';
+  renderConteo();
+  if(s!==null)document.getElementById('c2').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function renderConteo(){
+  renderC1();renderC2();renderC3();renderCHoy();
+}
+function renderC1(){
+  var picked=cPick!==null,i;
+  $('#c1').className='block'+(picked?' done':'');
+  $('#c1Badge').textContent=picked?(cPick?skuName(cPick):'sin modelo'):'—';
+  $('#c1Badge').style.background=picked?'var(--armink)':'';
+  $('#c1Badge').style.color=picked?'var(--arm)':'';
+
+  if(picked){
+    var t=cPick?stockOf(cPick):(stockBySku()['']||{par:0,pre:0,arm:0});
+    $('#cPicked').innerHTML='<div class="picked">'+
+      '<span class="tl">'+esc(cPick?(skuParts(cPick).tal||'—'):'—')+'</span>'+
+      '<span class="pi"><b>'+esc(cPick?skuParts(cPick).mod:'Sin modelo')+'</b>'+
+      '<span>'+esc(cPick||'stock sin SKU')+' · '+t.par+' para armar · '+t.pre+' prearm · '+t.arm+' armadas</span></span>'+
+      '<button class="ch" id="cUnpick">Cambiar</button></div>';
+    $('#cUnpick').addEventListener('click',function(){pickC(null);});
+  }else{
+    $('#cPicked').innerHTML='<div class="hint" style="margin:0 0 11px">Buscá el modelo y tocalo. '+
+      'Después cargás cuántos cuadros entraron, o corregís el conteo real.</div>';
+  }
+
+  var q=($('#qConteo').value||'').trim(),h='',n=0;
+  if(q){
+    var words=qWords(q);
+    for(i=0;i<CAT.length;i++){
+      var s=CAT[i].s;
+      if(!skuMatch(s,words))continue;
+      n++;if(n>8)break;
+      h+=skuRowHTML(s,stockOf(s));
+    }
+    $('#cRes').innerHTML=h||'<div class="empty">Ningún modelo coincide.<br>Se agrega desde Stock → ➕ Artículo.</div>';
+  }else $('#cRes').innerHTML='';
+
+  var d='';
+  if(!q){
+    var hoy=movOf(today(),CONTEO),vistos={},keys=[];
+    for(i=0;i<hoy.length;i++){var k=hoy[i].sk;if(k&&!vistos[k]){vistos[k]=1;keys.push(k);}}
+    if(keys.length){
+      d+='<div class="field" style="margin:4px 0 7px"><label>Contados hoy</label></div>';
+      for(i=0;i<keys.length;i++)d+=skuRowHTML(keys[i],stockOf(keys[i]));
+    }
+    d+='<div class="skrow" data-sku="" style="background:#fbfbfe">'+
+       '<span class="tl">—</span><span class="si"><b>Sin modelo</b>'+
+       '<span>contar sin SKU, sólo el total</span></span><span class="go">›</span></div>';
+  }
+  $('#cRecent').innerHTML=d;
+
+  var rs=document.querySelectorAll('#cRes [data-sku],#cRecent [data-sku]');
+  for(i=0;i<rs.length;i++)rs[i].addEventListener('click',function(){pickC(this.getAttribute('data-sku'));});
+}
+function skuRowHTML(s,t){
+  var p=skuParts(s);
+  return '<div class="skrow" data-sku="'+esc(s)+'">'+
+    '<span class="tl">'+esc(p.tal||'—')+'</span>'+
+    '<span class="si"><b>'+esc(p.mod)+'</b><span>'+esc(s)+'</span></span>'+
+    '<span class="nums">'+
+      '<span class="n '+cls('par',t.par)+'" title="para armar">'+t.par+'</span>'+
+      '<span class="n '+cls('pre',t.pre)+'" title="prearmadas">'+t.pre+'</span>'+
+      '<span class="n '+cls('arm',t.arm)+'" title="armadas">'+t.arm+'</span>'+
+    '</span><span class="go">›</span></div>';
+}
+function renderC2(){
+  var b=$('#c2body'),i;
+  if(cPick===null){
+    $('#c2').className='block off';
+    b.innerHTML='<div class="empty">Primero elegí el modelo en el paso 1.</div>';
+    return;
+  }
+  $('#c2').className='block';
+  var t=cPick?stockOf(cPick):(stockBySku()['']||{par:0,pre:0,arm:0});
+  var h='<div class="p2sum">Se suman <b>'+cQ+'</b> cuadros de <b>'+esc(cPick?skuName(cPick):'sin modelo')+
+    '</b> a <b>para armar</b>. Ahora hay '+t.par+'.</div>'+
+    '<div class="cnt"><button id="cMinus">−</button>'+
+    '<input id="cNum" type="number" inputmode="numeric" step="1" min="1" value="'+cQ+'">'+
+    '<button id="cPlus">+</button></div>'+
+    '<div class="qchips"><button data-q="1">1</button><button data-q="5">5</button>'+
+    '<button data-q="10">10</button><button data-q="20">20</button></div>'+
+    '<div class="field"><label>Nota (opcional)</label>'+
+    '<input id="cNota" placeholder="Ej: remito 1234" autocomplete="off" value="'+esc(cNotaVal)+'"></div>'+
+    '<div class="row-btns"><button class="btn btn-primary" id="cOk">➕ Agregar '+cQ+' al stock</button></div>';
+  if(cLast)h+='<div class="note note-k" style="margin-top:11px">✓ '+esc(cLast)+'</div>';
+  b.innerHTML=h;
+
+  var setQ=function(v){cQ=Math.max(1,Math.round(v||1));renderC2();};
+  $('#cMinus').addEventListener('click',function(){setQ(cQ-1);});
+  $('#cPlus').addEventListener('click',function(){setQ(cQ+1);});
+  /* mientras se tipea no se re-dibuja, para no perder el foco */
+  $('#cNum').addEventListener('input',function(){
+    var v=Math.round(+this.value||0);
+    cQ=v>0?v:1;
+    $('#cOk').textContent='➕ Agregar '+cQ+' al stock';
+  });
+  $('#cNum').addEventListener('change',function(){setQ(cQ);});
+  $('#cNota').addEventListener('input',function(){cNotaVal=this.value;});
+  var cs=b.querySelectorAll('.qchips button');
+  for(i=0;i<cs.length;i++)cs[i].addEventListener('click',function(){setQ(+this.getAttribute('data-q'));});
+  $('#cOk').addEventListener('click',function(){
+    if(!addMov(selDay,'ing',cQ,cPick||'',cNotaVal)){toast('Poné una cantidad');return;}
+    cLast='Ingresaron '+cQ+' cuadros de '+(cPick?skuName(cPick):'sin modelo')+'.';
+    toast('+'+cQ+' para armar · '+(cPick?skuName(cPick):'sin modelo'));
+    cQ=1;cNotaVal='';render();
+  });
+}
+function renderC3(){
+  var b=$('#c3body');
+  if(cPick===null){
+    $('#c3').className='block off';
+    b.innerHTML='<div class="empty">Primero elegí el modelo en el paso 1.</div>';
+    return;
+  }
+  $('#c3').className='block';
+  var t=cPick?stockOf(cPick):(stockBySku()['']||{par:0,pre:0,arm:0});
+  b.innerHTML='<div class="hint" style="margin:0 0 11px">Escribí lo que contaste de verdad. Se guarda '+
+    '<b>la diferencia</b> como ajuste, así queda registrado qué cambió y cuándo.</div>'+
+    '<div class="g3">'+
+      '<div class="field"><label>Para armar</label><input id="fxPar" type="number" inputmode="numeric" value="'+t.par+'"></div>'+
+      '<div class="field"><label>Prearmadas</label><input id="fxPre" type="number" inputmode="numeric" value="'+t.pre+'"></div>'+
+      '<div class="field"><label>Armadas</label><input id="fxArm" type="number" inputmode="numeric" value="'+t.arm+'"></div>'+
+    '</div>'+
+    '<div class="row-btns"><button class="btn btn-primary" id="fxOk">Guardar el conteo</button></div>';
+  $('#fxOk').addEventListener('click',function(){
+    var cur=cPick?stockOf(cPick):(stockBySku()['']||{par:0,pre:0,arm:0});
+    var v={par:Math.round(+$('#fxPar').value||0),pre:Math.round(+$('#fxPre').value||0),arm:Math.round(+$('#fxArm').value||0)};
+    var mapa={par:'ajp',pre:'ajr',arm:'aja'},n=0,k;
+    for(k in mapa)if(mapa.hasOwnProperty(k)){
+      var dif=v[k]-cur[k];
+      if(dif){addMov(selDay,mapa[k],dif,cPick||'','conteo');n++;}
+    }
+    if(!n){toast('No hay diferencias');return;}
+    cLast='Conteo ajustado: '+v.par+' para armar · '+v.pre+' prearm · '+v.arm+' armadas.';
+    toast('Conteo guardado');render();
+  });
+}
+function renderCHoy(){
+  var ms=movOf(today(),CONTEO),h='',i;
+  $('#cHoyCount').textContent=ms.length;
+  if(!ms.length){$('#cHoy').innerHTML='<div class="empty">Hoy no cargaste ingresos ni ajustes.</div>';return;}
+  for(i=0;i<ms.length;i++){
+    var m=ms[i],tt=tipo(m.tp);
+    h+='<div class="mv'+(esAjuste(m.tp)?' aj':'')+'">'+
+       '<span class="hh">'+hhmm(m.ts)+'</span>'+
+       '<span class="tag '+m.tp+'">'+esc(tt.n)+'</span>'+
+       '<span class="qy">'+(m.q>0?'+':'')+m.q+'</span>'+
+       '<span class="nt">'+esc(mLabel(m))+'</span>'+
+       '<button class="x" data-cdel="'+m.id+'">✕</button></div>';
+  }
+  $('#cHoy').innerHTML=h;
+  var xs=$('#cHoy').querySelectorAll('[data-cdel]');
+  for(i=0;i<xs.length;i++)xs[i].addEventListener('click',function(){
+    var id=this.getAttribute('data-cdel');
+    confirmBox('Borrar este conteo','Se descuenta del stock.',function(){
+      if(delMov(id)){toast('Borrado');render();}
+    });
+  });
+}
+$('#qConteo').addEventListener('input',function(){renderC1();});
+
+/* ========================= HISTORIAL ========================= */
+function renderHist(){
+  var i;
+  $('#dLab').className='dlab'+(selDay===today()?'':' old');
+  $('#dLab').innerHTML='<b>'+esc(relDay(selDay))+'</b><span>'+esc(fmtDayLong(selDay))+'</span>';
+  $('#dNext').disabled=selDay>=today();
+
+  var t=dayTotals(selDay);
+  $('#hKpis').innerHTML=
+    kpi('par','ing',t.ing,'Ingresos',0)+
+    kpi('pre','pre',t.pre,'Prearmadas',+CFG.meta.pre||0)+
+    kpi('arm','arm',t.arm,'Armadas',+CFG.meta.arm||0)+
+    kpi('caj','caj',t.caj,'En caja',+CFG.meta.caj||0);
+
+  var map=dayBySku(selDay),keys=[],k,rows='';
+  for(k in map)if(map.hasOwnProperty(k)&&k&&!dayVacio(map[k]))keys.push(k);
+  keys.sort();
+  for(i=0;i<keys.length;i++){
+    var s=keys[i],p=skuParts(s),x=map[s];
+    rows+='<tr data-sku="'+esc(s)+'">'+
+      '<td><b>'+esc(p.mod)+'</b> <span class="tl">'+esc(p.tal||'—')+'</span></td>'+
+      '<td class="'+(x.ing?'par':'z')+'">'+x.ing+'</td>'+
+      '<td class="'+(x.pre?'pre':'z')+'">'+x.pre+'</td>'+
+      '<td class="'+(x.arm?'arm':'z')+'">'+x.arm+'</td>'+
+      '<td class="'+(x.caj?'caj':'z')+'">'+x.caj+'</td></tr>';
+  }
+  if(map['']&&!dayVacio(map[''])){
+    var z=map[''];
+    rows+='<tr><td style="color:var(--muted)">sin modelo</td>'+
+      '<td class="'+(z.ing?'par':'z')+'">'+z.ing+'</td>'+
+      '<td class="'+(z.pre?'pre':'z')+'">'+z.pre+'</td>'+
+      '<td class="'+(z.arm?'arm':'z')+'">'+z.arm+'</td>'+
+      '<td class="'+(z.caj?'caj':'z')+'">'+z.caj+'</td></tr>';
+  }
+  if(!rows){
+    $('#hTbl').innerHTML='<div class="empty">Este día no tiene movimientos.</div>';
+  }else{
+    $('#hTbl').innerHTML='<table class="tbl"><thead><tr><th>Modelo</th><th>Ingr.</th><th>Prearm.</th>'+
+      '<th>Armadas</th><th>En caja</th></tr></thead><tbody>'+rows+
+      '<tr class="tot"><td>Total</td><td>'+t.ing+'</td><td>'+t.pre+'</td><td>'+t.arm+'</td><td>'+t.caj+'</td></tr>'+
+      '</tbody></table>';
+    var rs=$('#hTbl').querySelectorAll('[data-sku]');
+    for(i=0;i<rs.length;i++)rs[i].addEventListener('click',function(){openSku(this.getAttribute('data-sku'));});
+  }
+
+  var ms=movOf(selDay),h='';
+  $('#hMvCount').textContent=ms.length;
+  if(!ms.length){
+    $('#hMvList').innerHTML='<div class="empty">Sin movimientos este día.</div>';
+  }else{
+    for(i=0;i<ms.length;i++){
+      var m=ms[i],tt=tipo(m.tp);
+      h+='<div class="mv'+(esAjuste(m.tp)?' aj':'')+'">'+
+         '<span class="hh">'+hhmm(m.ts)+'</span>'+
+         '<span class="tag '+m.tp+'">'+esc(tt.n)+'</span>'+
+         '<span class="qy">'+(m.q>0?'+':'')+m.q+'</span>'+
+         '<span class="nt">'+esc(mLabel(m))+'</span>'+
+         '<button class="x" data-hdel="'+m.id+'">✕</button></div>';
+    }
+    $('#hMvList').innerHTML=h;
+    var xs=$('#hMvList').querySelectorAll('[data-hdel]');
+    for(i=0;i<xs.length;i++)xs[i].addEventListener('click',function(){
+      var id=this.getAttribute('data-hdel');
+      confirmBox('Borrar este movimiento','Vuelve a sumar o restar en el stock, según lo que era.',function(){
+        if(delMov(id)){toast('Movimiento borrado');render();}
+      });
+    });
+  }
+
+  renderUpState();
+
+  var days=daysWithData().slice().reverse(),dh='';
+  $('#histCount').textContent=days.length;
+  if(!days.length){
+    $('#histList').innerHTML='<div class="empty">Sin días cargados todavía.</div>';
+  }else{
+    for(i=0;i<days.length;i++){
+      var d=days[i],dt=dayTotals(d);
+      dh+='<div class="drow" data-day="'+d+'">'+
+        '<span class="dd"><b>'+esc(relDay(d))+'</b><span>'+esc(fmtDayLong(d))+
+          (UP[d]?' · ✓ subido':'')+'</span></span>'+
+        '<span class="nums">'+
+          '<span class="n '+(dt.pre?'pre':'z')+'">'+dt.pre+'</span>'+
+          '<span class="n '+(dt.arm?'arm':'z')+'">'+dt.arm+'</span>'+
+          '<span class="n '+(dt.caj?'caj':'z')+'">'+dt.caj+'</span>'+
+        '</span></div>';
+    }
+    $('#histList').innerHTML=dh;
+    var ds=$('#histList').querySelectorAll('[data-day]');
+    for(i=0;i<ds.length;i++)ds[i].addEventListener('click',function(){
+      selDay=this.getAttribute('data-day');renderHist();window.scrollTo(0,0);
+    });
+  }
+
+  renderResumen();
+}
+function kpi(color,k,v,lbl,meta){
+  var pct=meta>0?Math.min(100,Math.round(v/meta*100)):0;
+  return '<div class="kpi '+color+'"><b>'+v+'</b><span>'+lbl+'</span>'+
+    (meta>0?'<span class="mt">de '+meta+' ('+pct+'%)</span>':'')+'</div>';
+}
+$('#dPrev').addEventListener('click',function(){selDay=shiftDay(selDay,-1);renderHist();});
+$('#dNext').addEventListener('click',function(){if(selDay<today()){selDay=shiftDay(selDay,1);renderHist();}});
+$('#dLab').addEventListener('click',function(){
+  if(selDay!==today()){selDay=today();renderHist();toast('Volviste a hoy');}
+});
+
+/* ---------- resumen del período ---------- */
+var PERIOD='sem';
+var PERIODS=[{k:'sem',n:'Esta semana'},{k:'mes',n:'Este mes'},{k:'d30',n:'Últimos 30 días'},{k:'all',n:'Todo'}];
+function periodDays(){
+  var all=daysWithData(),out=[],i;
+  if(PERIOD==='all')return all;
+  var now=new Date(),from;
+  if(PERIOD==='sem'){
+    var wd=(now.getDay()+6)%7;
+    from=new Date(now.getFullYear(),now.getMonth(),now.getDate()-wd);
+  }else if(PERIOD==='mes'){
+    from=new Date(now.getFullYear(),now.getMonth(),1);
+  }else{
+    from=new Date(now.getFullYear(),now.getMonth(),now.getDate()-29);
+  }
+  var f=dstr(from);
+  for(i=0;i<all.length;i++)if(all[i]>=f)out.push(all[i]);
+  return out;
+}
+function renderResumen(){
+  var i,h='';
+  for(i=0;i<PERIODS.length;i++)
+    h+='<button class="seg'+(PERIODS[i].k===PERIOD?' on':'')+'" data-p="'+PERIODS[i].k+'">'+PERIODS[i].n+'</button>';
+  $('#segs').innerHTML=h;
+  var sg=$('#segs').querySelectorAll('[data-p]');
+  for(i=0;i<sg.length;i++)sg[i].addEventListener('click',function(){PERIOD=this.getAttribute('data-p');renderResumen();});
+
+  var days=periodDays(),t=rangeTotals(days);
+  var show=days.slice(-14),max=1,c='';
+  for(i=0;i<show.length;i++){
+    var tt=dayTotals(show[i]);
+    max=Math.max(max,tt.pre,tt.arm,tt.caj);
+  }
+  if(!show.length){
+    $('#chart').innerHTML='<div class="empty" style="width:100%">Sin datos en este período.</div>';
+  }else{
+    for(i=0;i<show.length;i++){
+      var x=dayTotals(show[i]);
+      c+='<div class="cday"><div class="cbars">'+
+        '<i class="pre" style="height:'+Math.round(Math.max(0,x.pre)/max*100)+'%"></i>'+
+        '<i class="arm" style="height:'+Math.round(Math.max(0,x.arm)/max*100)+'%"></i>'+
+        '<i class="caj" style="height:'+Math.round(Math.max(0,x.caj)/max*100)+'%"></i>'+
+        '</div><div class="cl">'+esc(fmtDay(show[i]))+'</div></div>';
+    }
+    $('#chart').innerHTML=c;
+  }
+
+  if(!days.length){$('#resTbl').innerHTML='<div class="empty">Sin datos.</div>';return;}
+  var rows='',rev=days.slice().reverse();
+  for(i=0;i<rev.length;i++){
+    var y=dayTotals(rev[i]);
+    rows+='<tr><td>'+esc(fmtDay(rev[i]))+'</td><td>'+y.ing+'</td><td>'+y.pre+'</td><td>'+y.arm+'</td><td>'+y.caj+'</td></tr>';
+  }
+  var nd=days.length;
+  function avg(n){return nd?(Math.round(n/nd*10)/10).toString().replace('.',','):'0';}
+  $('#resTbl').innerHTML='<table class="tbl"><thead><tr><th>Día</th><th>Ingr.</th><th>Prearm.</th><th>Armadas</th>'+
+    '<th>En caja</th></tr></thead><tbody>'+rows+
+    '<tr class="tot"><td>Total ('+nd+' día'+(nd===1?'':'s')+')</td><td>'+t.ing+'</td><td>'+t.pre+'</td>'+
+    '<td>'+t.arm+'</td><td>'+t.caj+'</td></tr>'+
+    '<tr><td style="color:var(--muted);font-size:12px">Promedio por día</td><td>'+avg(t.ing)+'</td>'+
+    '<td>'+avg(t.pre)+'</td><td>'+avg(t.arm)+'</td><td>'+avg(t.caj)+'</td></tr></tbody></table>';
+}
+
+/* ========================= AJUSTES ========================= */
+function renderCfg(){
+  $('#mPre').value=CFG.meta.pre||'';
+  $('#mArm').value=CFG.meta.arm||'';
+  $('#mCaj').value=CFG.meta.caj||'';
+  $('#cPers').value=CFG.pers||'';
+  $('#gasUrl').value=GAS||'';
+  var pill=$('#gasPill'),nUp=0,u,i;
+  for(u in UP)if(UP.hasOwnProperty(u))nUp++;
+  pill.className='pill '+(GAS?'pill-ok':'pill-no');
+  pill.textContent=GAS?('conectado · '+nUp+' día'+(nUp===1?'':'s')+' subido'+(nUp===1?'':'s')):'sin configurar';
+
+  var t=stockAll(),days=daysWithData();
+  $('#cfgInfo').innerHTML='Guardado en este dispositivo: <b>'+MOV.length+'</b> movimientos en <b>'+days.length+
+    '</b> día'+(days.length===1?'':'s')+'.<br>Catálogo: <b>'+CAT.length+'</b> modelos ('+CUSTOM.length+' propios).'+
+    '<br>Stock actual: '+t.par+' para armar · '+t.pre+' prearmadas · '+t.arm+' armadas.';
+
+  $('#cstCount').textContent=CUSTOM.length;
+  if(!CUSTOM.length){
+    $('#cstList').innerHTML='<div class="empty">Ninguno. Se agregan desde Stock → ➕ Artículo.</div>';
+  }else{
+    var h='';
+    for(i=0;i<CUSTOM.length;i++){
+      var s=CUSTOM[i],p=skuParts(s),st=stockOf(s);
+      h+='<div class="mv"><span class="tag arm">'+esc(p.tal||'—')+'</span>'+
+         '<span class="nt" style="font-size:13px;color:var(--ink);font-weight:700">'+esc(p.mod)+'</span>'+
+         '<span class="hh">'+st.par+' / '+st.pre+' / '+st.arm+'</span>'+
+         '<button class="x" data-cstdel="'+esc(s)+'">✕</button></div>';
+    }
+    $('#cstList').innerHTML=h;
+    var xs=$('#cstList').querySelectorAll('[data-cstdel]');
+    for(i=0;i<xs.length;i++)xs[i].addEventListener('click',function(){
+      var s=this.getAttribute('data-cstdel');
+      confirmBox('Sacar del catálogo','Se saca '+skuName(s)+' de la lista de modelos. Los movimientos que tenga '+
+        'NO se borran: siguen contando en el stock y en los reportes.',function(){
+        for(var j=0;j<CUSTOM.length;j++)if(CUSTOM[j]===s){CUSTOM.splice(j,1);break;}
+        put(LS_SKU,CUSTOM);CAT=catalog();toast('Modelo sacado del catálogo');render();
+      });
+    });
+  }
+}
+$('#btnSaveCfg').addEventListener('click',function(){
+  CFG.meta={pre:Math.max(0,Math.round(+$('#mPre').value||0)),
+            arm:Math.max(0,Math.round(+$('#mArm').value||0)),
+            caj:Math.max(0,Math.round(+$('#mCaj').value||0))};
+  CFG.pers=($('#cPers').value||'').trim();
+  put(LS_CFG,CFG);toast('Guardado');render();
+});
+$('#btnSaveGas').addEventListener('click',function(){
+  var v=($('#gasUrl').value||'').trim();
+  if(v&&!/^https:\/\//i.test(v)){toast('La URL tiene que empezar con https://');return;}
+  GAS=v;put(LS_GAS,GAS);
+  if(!v)toast('URL borrada');
+  else if(!/\/exec$/.test(v))toast('Guardado. Ojo: la URL debería terminar en /exec');
+  else toast('URL guardada');
+  render();
+});
+$('#btnTestGas').addEventListener('click',function(){
+  if(!GAS){toast('Primero pegá y guardá la URL');return;}
+  window.open(GAS,'_blank');
+  toast('Se abre el script: tiene que responder ok:true');
+});
+$('#btnExpJson').addEventListener('click',function(){
+  download('bicis-respaldo-'+today()+'.json',
+    JSON.stringify({v:3,cfg:CFG,skus:CUSTOM,mov:MOV},null,1),'application/json');
+});
+$('#btnImpJson').addEventListener('click',function(){$('#fileJson').click();});
+$('#fileJson').addEventListener('change',function(e){
+  var f=e.target.files&&e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    var data;
+    try{data=JSON.parse(r.result);}catch(err){toast('El archivo no es un JSON válido');return;}
+    if(!data||!(data.mov instanceof Array)){toast('El archivo no tiene movimientos');return;}
+    var ok=[],i;
+    for(i=0;i<data.mov.length;i++){
+      var m=data.mov[i],tp=m&&(m.tp||m.st);
+      if(m&&/^\d{4}-\d{2}-\d{2}$/.test(m.d)&&tipo(tp)&&isFinite(+m.q)){
+        ok.push({id:m.id||('m'+i+'_'+Math.random().toString(36).slice(2,7)),d:m.d,ts:+m.ts||dparse(m.d).getTime(),
+          tp:tp,sk:(m.sk||'').toUpperCase(),q:Math.round(+m.q),n:m.n||''});
+      }
+    }
+    if(!ok.length){toast('No se encontraron movimientos válidos');return;}
+    confirmBox('Importar respaldo','Se agregan '+ok.length+' movimientos a lo que ya hay (no se borra nada). '+
+      'Los repetidos se saltean.',function(){
+      var have={},add=0,j,k;
+      for(j=0;j<MOV.length;j++)have[MOV[j].id]=1;
+      for(k=0;k<ok.length;k++)if(!have[ok[k].id]){MOV.push(ok[k]);have[ok[k].id]=1;add++;}
+      saveMov();
+      if(data.cfg&&data.cfg.meta){CFG=data.cfg;if(!CFG.meta)CFG.meta={pre:0,arm:0,caj:0};put(LS_CFG,CFG);}
+      if(data.skus instanceof Array){
+        for(var s=0;s<data.skus.length;s++){
+          var sk=String(data.skus[s]||'').toUpperCase();
+          if(sk&&!catHas(sk)){CUSTOM.push(sk);CAT=catalog();}
+        }
+        put(LS_SKU,CUSTOM);
+      }
+      toast(add+' movimientos importados');render();
+    });
+  };
+  r.readAsText(f);
+  e.target.value='';
+});
+$('#btnWipe').addEventListener('click',function(){
+  confirmBox('Borrar todo','Se borran los '+MOV.length+' movimientos de este dispositivo, con stock e historial. '+
+    'Conviene exportar el JSON antes.',function(){
+    MOV=[];saveMov();UP={};put(LS_UP,UP);toast('Registro borrado');render();
+  });
+});
+
+/* ========================= artículo nuevo (nombre + talle) ========================= */
+var TALLES=['S','M','L','XL','XXL','24','26','29'];
+var nsTal={};
+function nsLimpio(s){
+  return String(s||'').toUpperCase().replace(/^BICI-/,'').replace(/[^A-Z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+function nsSkus(){
+  var nom=nsLimpio($('#nsNom').value),out=[],t,k;
+  if(!nom)return out;
+  var tal=[];
+  for(k in nsTal)if(nsTal.hasOwnProperty(k)&&nsTal[k])tal.push(k);
+  t=nsLimpio($('#nsTalOtro').value);
+  if(t&&tal.indexOf(t)<0)tal.push(t);
+  tal.sort();
+  if(!tal.length)return [{s:'BICI-'+nom,tal:''}];
+  for(var i=0;i<tal.length;i++)out.push({s:'BICI-'+nom+'-'+tal[i],tal:tal[i]});
+  return out;
+}
+function renderNs(){
+  var h='',i;
+  for(i=0;i<TALLES.length;i++)
+    h+='<button data-tal="'+TALLES[i]+'"'+(nsTal[TALLES[i]]?' class="on"':'')+'>'+TALLES[i]+'</button>';
+  $('#nsTalles').innerHTML=h;
+  var bs=$('#nsTalles').querySelectorAll('[data-tal]');
+  for(i=0;i<bs.length;i++)bs[i].addEventListener('click',function(){
+    var t=this.getAttribute('data-tal');
+    nsTal[t]=!nsTal[t];renderNs();
+  });
+
+  var sk=nsSkus(),p='';
+  if(!sk.length){
+    p='<div class="hint">Escribí el nombre y marcá los talles para ver cómo queda.</div>';
+  }else{
+    var nuevos=0;
+    p='<div class="field" style="margin-bottom:6px"><label>Se van a crear</label></div>';
+    for(i=0;i<sk.length;i++){
+      var ya=catHas(sk[i].s);
+      if(!ya)nuevos++;
+      p+='<div class="mv"><span class="tag '+(ya?'caj':'arm')+'">'+esc(sk[i].tal||'—')+'</span>'+
+         '<span class="nt" style="font-size:13px;color:var(--ink);font-weight:700">'+esc(sk[i].s)+'</span>'+
+         '<span class="hh">'+(ya?'ya existe':'nuevo')+'</span></div>';
+    }
+    p+='<div class="hint">'+nuevos+' artículo'+(nuevos===1?'':'s')+' nuevo'+(nuevos===1?'':'s')+
+       ' de '+sk.length+'.</div>';
+  }
+  $('#nsPrev').innerHTML=p;
+}
+$('#btnNewSku').addEventListener('click',function(){
+  $('#nsNom').value='';$('#nsTalOtro').value='';nsTal={};
+  renderNs();
+  $('#nsBg').classList.add('show');$('#nsSheet').classList.add('show');document.body.style.overflow='hidden';
+  setTimeout(function(){$('#nsNom').focus();},260);
+});
+function closeNs(){
+  $('#nsBg').classList.remove('show');$('#nsSheet').classList.remove('show');document.body.style.overflow='';
+}
+$('#nsX').addEventListener('click',closeNs);
+$('#nsCancel').addEventListener('click',closeNs);
+$('#nsBg').addEventListener('click',closeNs);
+$('#nsNom').addEventListener('input',renderNs);
+$('#nsTalOtro').addEventListener('input',renderNs);
+$('#nsOk').addEventListener('click',function(){
+  var sk=nsSkus(),add=0,i;
+  if(!sk.length){toast('Poné el nombre del modelo');return;}
+  for(i=0;i<sk.length;i++){
+    if(sk[i].s.length<5)continue;
+    if(catHas(sk[i].s))continue;
+    CUSTOM.push(sk[i].s);add++;
+  }
+  if(!add){toast('Ya estaban todos en el catálogo');return;}
+  put(LS_SKU,CUSTOM);CAT=catalog();
+  closeNs();
+  toast(add+' artículo'+(add===1?'':'s')+' agregado'+(add===1?'':'s'));
+  stockAll_=true;render();
+});
+
+/* ========================= planilla de stock ========================= */
+/* Baja un CSV con TODO el catálogo y el stock actual, para completar a mano
+   y volver a subirlo. Al importar se guarda la diferencia como ajuste. */
+$('#btnTplDown').addEventListener('click',function(){
+  var map=stockBySku(),L=['sku;modelo;talle;para_armar;prearmadas;armadas'],i;
+  for(i=0;i<CAT.length;i++){
+    var s=CAT[i].s,p=skuParts(s),t=map[s]||{par:0,pre:0,arm:0};
+    L.push(s+';'+p.mod+';'+p.tal+';'+t.par+';'+t.pre+';'+t.arm);
+  }
+  var k;
+  for(k in map)if(map.hasOwnProperty(k)&&k&&!catHas(k)){
+    var pp=skuParts(k),tt=map[k];
+    L.push(k+';'+pp.mod+';'+pp.tal+';'+tt.par+';'+tt.pre+';'+tt.arm);
+  }
+  download('plantilla-stock-bicis-'+today()+'.csv','﻿'+L.join('\r\n'),'text/csv;charset=utf-8');
+  toast('Planilla generada: completá las columnas y volvé a cargarla');
+});
+$('#btnTplUp').addEventListener('click',function(){$('#fileTpl').click();});
+$('#fileTpl').addEventListener('change',function(e){
+  var f=e.target.files&&e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){leerPlanilla(String(r.result||''));};
+  r.readAsText(f);
+  e.target.value='';
+});
+/* una celda numérica de la planilla: null = vacía (no se toca ese estado) */
+function celda(c,idx,k){
+  if(idx[k]===undefined)return null;
+  var raw=String(c[idx[k]]==null?'':c[idx[k]]).replace(/["\s]/g,'').replace(',','.');
+  if(raw==='')return null;
+  var v=Math.round(+raw);
+  return isFinite(v)?v:null;
+}
+function norm(s){
+  return String(s||'').toLowerCase().replace(/^﻿/,'')
+    .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i')
+    .replace(/[óòö]/g,'o').replace(/[úùü]/g,'u').replace(/[^a-z0-9]/g,'');
+}
+function leerPlanilla(text){
+  text=text.replace(/^﻿/,'');
+  var lineas=text.split(/\r?\n/),i,j;
+  /* separador: el que más aparece en la primera línea con contenido */
+  var head='';
+  for(i=0;i<lineas.length;i++)if(lineas[i].trim()){head=lineas[i];break;}
+  if(!head){toast('El archivo está vacío');return;}
+  var sep=';',best=0,cands=[';',',','\t','|'];
+  for(i=0;i<cands.length;i++){
+    var c=head.split(cands[i]).length-1;
+    if(c>best){best=c;sep=cands[i];}
+  }
+  if(!best){toast('No se reconocen las columnas: usá la planilla que baja la app');return;}
+
+  var cols=head.split(sep),idx={};
+  for(i=0;i<cols.length;i++){
+    var n=norm(cols[i]);
+    if(n==='sku')idx.sku=i;
+    else if(n==='modelo'||n==='nombre')idx.mod=i;
+    else if(n==='talle'||n==='talla')idx.tal=i;
+    else if(n==='paraarmar'||n==='cuadros'||n==='paraarmarcuadros')idx.par=i;
+    else if(n==='prearmadas'||n==='prearmada'||n==='prearmado')idx.pre=i;
+    else if(n==='armadas'||n==='armada'||n==='armado')idx.arm=i;
+  }
+  if(idx.par===undefined&&idx.pre===undefined&&idx.arm===undefined){
+    toast('Faltan las columnas para_armar / prearmadas / armadas');return;
+  }
+  if(idx.sku===undefined&&idx.mod===undefined){
+    toast('Falta la columna sku (o modelo + talle)');return;
+  }
+
+  var filas=[],nuevos=[],malas=0;
+  for(i=0;i<lineas.length;i++){
+    if(!lineas[i].trim())continue;
+    if(lineas[i]===head)continue;
+    var c2=lineas[i].split(sep);
+    var sku=idx.sku!==undefined?nsLimpio(c2[idx.sku]):'';
+    if(sku)sku='BICI-'+sku;
+    if(!sku&&idx.mod!==undefined){
+      var nom=nsLimpio(c2[idx.mod]),tal=idx.tal!==undefined?nsLimpio(c2[idx.tal]):'';
+      if(nom)sku='BICI-'+nom+(tal?'-'+tal:'');
+    }
+    if(!sku)continue;
+    if(sku.indexOf('TOTAL')>=0||sku==='BICI-SIN-MODELO')continue;
+    var v={par:celda(c2,idx,'par'),pre:celda(c2,idx,'pre'),arm:celda(c2,idx,'arm')};
+    if(v.par===null&&v.pre===null&&v.arm===null){malas++;continue;}
+    filas.push({s:sku,v:v});
+    if(!catHas(sku))nuevos.push(sku);
+  }
+  if(!filas.length){toast('No se encontró ninguna fila con cantidades');return;}
+
+  /* qué cambia realmente */
+  var cambios=[],uni=0;
+  for(i=0;i<filas.length;i++){
+    var cur=stockOf(filas[i].s),d={},hay=false,k2;
+    var mapa={par:'par',pre:'pre',arm:'arm'};
+    for(k2 in mapa)if(mapa.hasOwnProperty(k2)){
+      var nv=filas[i].v[k2];
+      if(nv===null)continue;
+      var dif=nv-cur[k2];
+      if(dif){d[k2]=dif;hay=true;uni+=Math.abs(dif);}
+    }
+    if(hay)cambios.push({s:filas[i].s,d:d});
+  }
+  if(!cambios.length){
+    toast('La planilla coincide con el stock: no hay nada que cambiar');return;
+  }
+  function pl(n,s,p){return n+' '+(n===1?s:p);}
+  var txt='Se '+(filas.length===1?'leyó':'leyeron')+' <b>'+pl(filas.length,'fila','filas')+'</b>. '+
+    (cambios.length===1?'Cambia':'Cambian')+' <b>'+pl(cambios.length,'modelo','modelos')+'</b> ('+
+    pl(uni,'unidad','unidades')+' de diferencia).';
+  if(nuevos.length)txt+='<br>Se '+(nuevos.length===1?'agrega':'agregan')+' al catálogo <b>'+
+    pl(nuevos.length,'artículo nuevo','artículos nuevos')+'</b>.';
+  if(malas)txt+='<br>'+pl(malas,'fila','filas')+' sin cantidades '+(malas===1?'quedó':'quedaron')+' afuera.';
+  txt+='<br><br>Se guarda como <b>ajuste de conteo</b> del '+relDay(selDay).toLowerCase()+
+    ': queda en el historial y no se pierde nada.';
+  confirmBox('Cargar la planilla',txt,function(){
+    var mapa={par:'ajp',pre:'ajr',arm:'aja'},i2,k3,n=0;
+    for(i2=0;i2<nuevos.length;i2++)if(!catHas(nuevos[i2])){CUSTOM.push(nuevos[i2]);CAT=catalog();}
+    put(LS_SKU,CUSTOM);
+    for(i2=0;i2<cambios.length;i2++){
+      for(k3 in cambios[i2].d)if(cambios[i2].d.hasOwnProperty(k3)){
+        addMov(selDay,mapa[k3],cambios[i2].d[k3],cambios[i2].s,'planilla');n++;
+      }
+    }
+    toast(n+' ajustes cargados de la planilla');
+    stockAll_=false;go('stock');
+  });
+}
+
+/* ========================= copiar / CSV ========================= */
+function openTxt(title,text){
+  $('#txtTitle').textContent=title;$('#txtOut').textContent=text;
+  $('#txtBg').classList.add('show');$('#txtSheet').classList.add('show');document.body.style.overflow='hidden';
+}
+function closeTxt(){
+  $('#txtBg').classList.remove('show');$('#txtSheet').classList.remove('show');document.body.style.overflow='';
+}
+$('#txtX').addEventListener('click',closeTxt);
+$('#txtClose').addEventListener('click',closeTxt);
+$('#txtBg').addEventListener('click',closeTxt);
+$('#txtCopy').addEventListener('click',function(){
+  var t=$('#txtOut').textContent;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){toast('Copiado');},function(){legacyCopy(t);});
+  }else legacyCopy(t);
+});
+function legacyCopy(t){
+  try{
+    var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.top='-1000px';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    toast('Copiado');
+  }catch(e){toast('Copialo a mano');}
+}
+function download(name,content,type){
+  try{
+    var b=new Blob([content],{type:type||'text/plain;charset=utf-8'});
+    var u=URL.createObjectURL(b),a=document.createElement('a');
+    a.href=u;a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(u);},300);
+    toast('Archivo generado');
+  }catch(e){openTxt(name,content);}
+}
+/* filas de stock (para CSV, copiado y subida) */
+function stockRows(){
+  var map=stockBySku(),out=[],i,k,seen={};
+  for(i=0;i<CAT.length;i++){var s=CAT[i].s;seen[s]=1;if(map[s]&&!stockVacio(map[s]))out.push({s:s,t:map[s]});}
+  for(k in map)if(map.hasOwnProperty(k)&&k&&!seen[k]&&!stockVacio(map[k]))out.push({s:k,t:map[k]});
+  out.sort(function(a,b){return a.s<b.s?-1:(a.s>b.s?1:0);});
+  if(map['']&&!stockVacio(map['']))out.push({s:'',t:map['']});
+  return out;
+}
+$('#btnCsvStock').addEventListener('click',function(){
+  var rows=stockRows();
+  if(!rows.length){toast('No hay stock para exportar');return;}
+  var L=['sku;modelo;talle;para_armar;prearmadas;armadas;total;responsable'],i;
+  for(i=0;i<rows.length;i++){
+    var r=rows[i],p=skuParts(r.s);
+    L.push((r.s||'SIN-MODELO')+';'+(r.s?p.mod:'sin modelo')+';'+p.tal+';'+r.t.par+';'+r.t.pre+';'+r.t.arm+';'+
+      (r.t.par+r.t.pre+r.t.arm)+';'+(CFG.pers||'').replace(/;/g,','));
+  }
+  var t=stockAll();
+  L.push('TOTAL;;;'+t.par+';'+t.pre+';'+t.arm+';'+(t.par+t.pre+t.arm)+';');
+  download('bicis-stock-'+today()+'.csv','﻿'+L.join('\r\n'),'text/csv;charset=utf-8');
+});
+$('#btnCopyStock').addEventListener('click',function(){
+  var rows=stockRows(),t=stockAll(),L=['🚲 Stock de bicicletas — '+fmtDayLong(today())],i;
+  if(CFG.pers)L.push(CFG.pers);
+  L.push('');
+  L.push('TOTAL: '+t.par+' para armar · '+t.pre+' prearmadas · '+t.arm+' armadas');
+  L.push('');
+  L.push('modelo: para armar / prearmadas / armadas');
+  for(i=0;i<rows.length;i++){
+    var r=rows[i];
+    L.push('· '+(r.s?skuName(r.s):'sin modelo')+': '+r.t.par+' / '+r.t.pre+' / '+r.t.arm);
+  }
+  if(!rows.length)L.push('(sin stock cargado)');
+  openTxt('Stock',L.join('\n'));
+});
+$('#btnCsvDias').addEventListener('click',function(){
+  var days=periodDays();
+  if(!days.length){toast('No hay datos para exportar');return;}
+  var L=['fecha;ingresos;prearmadas;armadas;en_caja;responsable'],i;
+  for(i=0;i<days.length;i++){
+    var t=dayTotals(days[i]);
+    L.push(days[i]+';'+t.ing+';'+t.pre+';'+t.arm+';'+t.caj+';'+(CFG.pers||'').replace(/;/g,','));
+  }
+  var tt=rangeTotals(days);
+  L.push('TOTAL;'+tt.ing+';'+tt.pre+';'+tt.arm+';'+tt.caj+';');
+  download('bicis-por-dia-'+days[0]+'_'+days[days.length-1]+'.csv','﻿'+L.join('\r\n'),'text/csv;charset=utf-8');
+});
+$('#btnCsvArm').addEventListener('click',function(){
+  var days=periodDays();
+  if(!days.length){toast('No hay datos para exportar');return;}
+  var acc={},i,j,k,set={};
+  for(i=0;i<days.length;i++)set[days[i]]=1;
+  for(i=0;i<MOV.length;i++){
+    var m=MOV[i];
+    if(!set[m.d])continue;
+    k=m.sk||'';
+    if(!acc[k])acc[k]={ing:0,pre:0,arm:0,caj:0};
+    if(acc[k][m.tp]!==undefined)acc[k][m.tp]+=m.q;
+  }
+  var keys=[];
+  for(k in acc)if(acc.hasOwnProperty(k))keys.push(k);
+  keys.sort();
+  var L=['sku;modelo;talle;ingresos;prearmadas;armadas;en_caja;periodo;responsable'];
+  var pn='';
+  for(j=0;j<PERIODS.length;j++)if(PERIODS[j].k===PERIOD)pn=PERIODS[j].n;
+  for(j=0;j<keys.length;j++){
+    var s=keys[j],p=skuParts(s),x=acc[s];
+    L.push((s||'SIN-MODELO')+';'+(s?p.mod:'sin modelo')+';'+p.tal+';'+x.ing+';'+x.pre+';'+x.arm+';'+x.caj+';'+
+      pn+';'+(CFG.pers||'').replace(/;/g,','));
+  }
+  download('bicis-armado-'+today()+'.csv','﻿'+L.join('\r\n'),'text/csv;charset=utf-8');
+});
+function parteDia(d){
+  var t=dayTotals(d),map=dayBySku(d),keys=[],k,L=[],i;
+  L.push('🚲 Bicicletas — '+fmtDayLong(d));
+  if(CFG.pers)L.push(CFG.pers);
+  L.push('');
+  L.push('Ingresos: '+t.ing);
+  L.push('Prearmadas: '+t.pre);
+  L.push('Armadas: '+t.arm);
+  L.push('En caja: '+t.caj);
+  for(k in map)if(map.hasOwnProperty(k)&&k&&!dayVacio(map[k]))keys.push(k);
+  keys.sort();
+  if(keys.length){
+    L.push('');
+    L.push('Por modelo (prearm / armadas / en caja):');
+    for(i=0;i<keys.length;i++){
+      var x=map[keys[i]];
+      L.push('· '+skuName(keys[i])+': '+x.pre+' / '+x.arm+' / '+x.caj+(x.ing?'  (ingresaron '+x.ing+')':''));
+    }
+  }
+  var s=stockAll();
+  L.push('');
+  L.push('Stock al cierre: '+s.par+' para armar · '+s.pre+' prearmadas · '+s.arm+' armadas');
+  return L.join('\n');
+}
+$('#btnCopyDay').addEventListener('click',function(){openTxt('Parte del día',parteDia(selDay));});
+
+/* ========================= subida a Drive ========================= */
+var sending=false, upDay=null, upSess=null, upState='ask', upErr='';
+function payloadFor(d){
+  var sm=stockRows(),dm=[],movs=[],i,k;
+  var map=dayBySku(d),keys=[];
+  for(k in map)if(map.hasOwnProperty(k)&&!dayVacio(map[k]))keys.push(k);
+  keys.sort();
+  for(i=0;i<keys.length;i++){
+    var s=keys[i],p=skuParts(s),x=map[s];
+    dm.push({sku:s||'SIN-MODELO',modelo:s?p.mod:'sin modelo',talle:s?p.tal:'',
+      ing:x.ing,pre:x.pre,arm:x.arm,caj:x.caj});
+  }
+  var ms=movOf(d);
+  for(i=0;i<ms.length;i++){
+    var m=ms[i],pp=skuParts(m.sk);
+    movs.push({hora:hhmm(m.ts),tipo:m.tp,tipoN:tipo(m.tp).n,sku:m.sk||'SIN-MODELO',
+      modelo:m.sk?pp.mod:'sin modelo',talle:m.sk?pp.tal:'',q:m.q,nota:m.n||''});
+  }
+  var stockMod=[];
+  for(i=0;i<sm.length;i++){
+    var r=sm[i],rp=skuParts(r.s);
+    stockMod.push({sku:r.s||'SIN-MODELO',modelo:r.s?rp.mod:'sin modelo',talle:r.s?rp.tal:'',
+      par:r.t.par,pre:r.t.pre,arm:r.t.arm});
+  }
+  return {app:'bicis-stock',v:2,sess:upSess,fecha:d,responsable:CFG.pers||'',
+    stock:stockAll(),stockModelos:stockMod,dia:dayTotals(d),diaModelos:dm,movs:movs};
+}
+function renderUpState(){
+  var u=UP[selDay],t=dayTotals(selDay),h;
+  $('#hUp').className='block'+(u?' done':'');
+  $('#upBadge').textContent=u?'✓ subido':'sin subir';
+  $('#upBadge').style.background=u?'var(--armink)':'#f0f0f6';
+  $('#upBadge').style.color=u?'var(--arm)':'var(--muted)';
+  if(!GAS)h='Para subir a Drive falta pegar la URL del Apps Script en <b>Ajustes</b>. El parte igual se puede copiar.';
+  else if(u)h='Último envío: '+fmtDay(dstr(new Date(u.ts)))+' '+hhmm(u.ts)+'. Si lo subís de nuevo, en Drive se '+
+    '<b>reemplaza</b> lo de este día.';
+  else h='Se sube el stock completo y lo que se hizo este día, a la carpeta <b>'+selDay+'</b> de Drive.';
+  $('#upHint').innerHTML=h;
+  $('#btnUpDay').disabled=!!sending||dayVacio(t);
+}
+function openUp(d){
+  if(sending){toast('Esperá, hay una subida en curso');return;}
+  if(dayVacio(dayTotals(d))){toast('Este día no tiene movimientos');return;}
+  upDay=d;upSess='s'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+  upState=GAS?'ask':'nogas';upErr='';
+  renderUp();
+  $('#upBg').classList.add('show');$('#upSheet').classList.add('show');document.body.style.overflow='hidden';
+}
+function renderUp(){
+  var pl=payloadFor(upDay),t=pl.dia,s=pl.stock,i,h='';
+  $('#upTitle').textContent=upState==='ok'?'Parte subido':'Subir el parte';
+  $('#upSub').textContent=relDay(upDay)+' · '+fmtDayLong(upDay);
+
+  if(upState==='nogas'){
+    h='<div class="note note-w">Todavía no está configurada la URL del Apps Script, así que no hay a dónde subir.'+
+      '<br><br>En <b>Ajustes → Google Drive</b> se pega la URL que termina en <b>/exec</b>. Los pasos para crear el '+
+      'script están en <b>apps-script/BicicletasStock.gs</b>.</div>';
+  }else{
+    h='<div class="field"><label>Movimientos del día</label></div><div class="kpis k4">'+
+      '<div class="kpi par"><b>'+t.ing+'</b><span>Ingresos</span></div>'+
+      '<div class="kpi pre"><b>'+t.pre+'</b><span>Prearmadas</span></div>'+
+      '<div class="kpi arm"><b>'+t.arm+'</b><span>Armadas</span></div>'+
+      '<div class="kpi caj"><b>'+t.caj+'</b><span>En caja</span></div></div>'+
+      '<div class="field"><label>Stock que queda</label></div><div class="kpis">'+
+      '<div class="kpi par"><b>'+s.par+'</b><span>Para armar</span></div>'+
+      '<div class="kpi pre"><b>'+s.pre+'</b><span>Prearmadas</span></div>'+
+      '<div class="kpi arm"><b>'+s.arm+'</b><span>Armadas</span></div></div>';
+    if(CFG.pers)h+='<div class="hint" style="margin:0 0 10px">Responsable: <b>'+esc(CFG.pers)+'</b></div>';
+    h+='<div class="hint">Van '+pl.stockModelos.length+' modelos con stock, '+pl.diaModelos.length+
+       ' con movimiento y '+pl.movs.length+' movimientos.</div>';
+    if(upState==='ask')
+      h+='<div class="hint">En Drive se crea la carpeta <b>Bicicletas stock / '+upDay+'</b> con '+
+         '<b>stock-'+upDay+'.csv</b>, <b>armado-'+upDay+'.csv</b> y <b>movimientos-'+upDay+'.csv</b>, '+
+         'más las filas en la planilla del histórico. Si ese día ya se subió, se reemplaza.</div>';
+    if(upState==='sending')
+      h+='<div class="hint"><b>Subiendo…</b> no cierres la app hasta que termine.</div>';
+    if(upState==='ok')
+      h+='<div class="note note-k">✓ Enviado a Drive. El envío va sin respuesta legible (igual que en Inventario y '+
+         'Devoluciones), así que la app confirma que <b>salió</b>, no que Drive ya lo guardó: si querés verlo, abrí '+
+         'la carpeta en Drive.</div>';
+    if(upState==='err')
+      h+='<div class="note note-e"><b>No se pudo enviar.</b><br>'+esc(upErr||'sin conexión')+'<br><br>No se borró ni '+
+         'se cambió nada. Con <b>Reintentar</b> se manda de nuevo con la misma sesión, así el script no lo duplica.</div>';
+  }
+  $('#upBody').innerHTML=h;
+
+  var ok=$('#upOk'),cancel=$('#upCancel');
+  cancel.style.display='';cancel.disabled=false;cancel.textContent='Cancelar';ok.disabled=false;
+  if(upState==='nogas'){ok.textContent='Ir a Ajustes';}
+  else if(upState==='ask'){ok.textContent='☁️ Confirmar y subir';}
+  else if(upState==='sending'){ok.textContent='Subiendo…';ok.disabled=true;cancel.disabled=true;}
+  else if(upState==='ok'){ok.textContent='Listo';cancel.style.display='none';}
+  else if(upState==='err'){ok.textContent='Reintentar';cancel.textContent='Cerrar';}
+}
+function closeUp(){
+  if(sending){toast('Esperá que termine la subida');return;}
+  $('#upBg').classList.remove('show');$('#upSheet').classList.remove('show');document.body.style.overflow='';
+  upDay=null;render();
+}
+$('#upX').addEventListener('click',closeUp);
+$('#upCancel').addEventListener('click',closeUp);
+$('#upBg').addEventListener('click',closeUp);
+$('#btnUpDay').addEventListener('click',function(){openUp(selDay);});
+$('#upOk').addEventListener('click',function(){
+  if(upState==='nogas'){
+    $('#upBg').classList.remove('show');$('#upSheet').classList.remove('show');document.body.style.overflow='';
+    go('cfg');return;
+  }
+  if(upState==='ok'){closeUp();return;}
+  if(sending)return;
+  subir();
+});
+function subir(){
+  sending=true;upState='sending';renderUp();
+  var pl=payloadFor(upDay),d=upDay;
+  fetch(GAS,{method:'POST',mode:'no-cors',cache:'no-store',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(pl)})
+    .then(function(){
+      sending=false;
+      UP[d]={ts:Date.now(),sess:upSess,mov:pl.movs.length};put(LS_UP,UP);
+      upState='ok';renderUp();toast('Parte subido');
+      if(VIEW==='hist')renderUpState();
+    })
+    .catch(function(e){
+      sending=false;
+      var msg=(e&&e.message)||'';
+      upErr=(!msg||/failed to fetch|networkerror|load failed/i.test(msg))
+        ? 'La request no salió. Puede ser que no haya señal, o que la URL del Apps Script esté mal pegada o sin '+
+          'implementar como "Cualquier persona".'
+        : msg;
+      upState='err';renderUp();
+    });
+}
+
+/* ========================= confirmación ========================= */
+var cfCb=null;
+function confirmBox(title,text,cb){
+  $('#cfTitle').textContent=title;$('#cfText').innerHTML=text;cfCb=cb;$('#cfBg').classList.add('show');
+}
+$('#cfNo').addEventListener('click',function(){$('#cfBg').classList.remove('show');cfCb=null;});
+$('#cfYes').addEventListener('click',function(){
+  $('#cfBg').classList.remove('show');var c=cfCb;cfCb=null;if(c)c();
+});
+
+/* ========================= arranque ========================= */
+render();
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden){
+    MOV=load(LS_MOV,MOV);CFG=load(LS_CFG,CFG);if(!CFG.meta)CFG.meta={pre:0,arm:0,caj:0};
+    UP=load(LS_UP,UP);GAS=load(LS_GAS,GAS);
+    render();
+  }
+});
+</script>
+<script>if("serviceWorker" in navigator){addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
+</body>
+</html>
